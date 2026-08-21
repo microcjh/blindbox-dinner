@@ -77,3 +77,16 @@
   - `user.verified` 为布尔：实名完成后由 task-012 `verify` 云函数写库并回填，前端 `isVerified()` 据此判断。
   - 敏感字段（openid、手机号、身份证）**只存云端，不得下发进 `user`**，避免本地存储泄露。
 - 登录/重登均为静默操作（`loading: false`），不弹全局 loading，由页面自行控制；登出 `logout()` 会清 storage 并清除 401 重登钩子。
+
+## 9. 订阅消息约定（前端，见 utils/subscribe.js）
+
+订阅消息授权由 `utils/subscribe.js` 封装，统一约束如下：
+
+- 模板 ID 集中管理在 `subscribe.js` 的 `TEMPLATES` 常量（按场景：`enroll_success` / `match_success` / `meal_reminder` / `review_reminder` / `sos_alert`）。
+  - 当前为占位串，需在「微信公众平台 → 功能 → 订阅消息 → 我的模板」申请真实模板 ID 后替换（形如 `wSxjJ...`）。
+- **授权时机强约束**：必须在「用户点击手势」中调用 `requestSubscribe`（如报名后按钮回调），**禁止**在 `onLoad` / 定时器中自动触发，否则微信审核拒绝。
+- 一次性订阅：用户授权后服务端仅 **7 天内**可发 1 条；社交类目无长期订阅权限。
+- 前端只负责「请求授权 + 记录授权状态」，**发送**动作在云函数侧通过 `cloud.openapi.subscribeMessage.send` 完成（task-015 match / task-016 register 等触发）。
+- 授权结果：`accept` 写入 granted 缓存；`reject` 不缓存；`ban`（errCode 20004）标记不再弹窗，需引导去设置页。
+- 订阅失败**绝不可阻断主流程**（如报名成功但用户拒订阅，饭局照常），`requestSubscribe` 始终 `resolve` 不 `reject`。
+- 登出时 `auth.logout()` 应一并 `subscribe.clearGranted()` 清授权缓存。
