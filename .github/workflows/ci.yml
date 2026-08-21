@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+jobs:
+  test:
+    name: 云函数与组件测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run all cloudfunction tests
+        run: bash scripts/test-all.sh
+
+  lint-md:
+    name: 文档规范检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docs links & headings present
+        run: |
+          for f in docs/*.md README.md CONTRIBUTING.md; do
+            [ -f "$f" ] || { echo "missing $f"; exit 1; }
+          done
+          echo "docs ok"

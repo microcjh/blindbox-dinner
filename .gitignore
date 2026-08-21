@@ -1,0 +1,37 @@
+# ===== 微信小程序 / 云开发 =====
+# 开发者工具本地配置（含机器相关路径，勿提交）
+project.private.config.json
+miniprogram_npm/
+
+# 云函数本地依赖（各自目录安装，不整体提交 node_modules）
+cloudfunctions/**/node_modules/
+cloudfunctions/**/package-lock.json
+
+# 云开发本地调试缓存
+.cloudbase/
+
+# ===== Node =====
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# ===== 密钥 / 环境配置（绝不入库） =====
+.env
+.env.*
+*.local
+private.key
+serviceAccount.json
+keys/
+
+# ===== 构建产物 =====
+dist/
+build/
+coverage/
+
+# ===== 编辑器 / OS =====
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

@@ -1,0 +1,16 @@
+# 默认审查人：所有变更至少需要以下任一成员审批
+# 语法：<路径> <GitHub 账号>
+
+# 全局默认
+*       @microcjh
+
+# 云函数与支付/实名（安全敏感）
+/cloudfunctions/verify/   @microcjh
+/cloudfunctions/payment/  @microcjh
+/cloudfunctions/sos/      @microcjh
+
+# 文档规范
+/docs/                    @microcjh
+
+# CI 配置
+/.github/                 @microcjh
