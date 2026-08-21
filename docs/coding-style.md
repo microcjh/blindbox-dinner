@@ -62,3 +62,18 @@
 | 503 | 第三方不可用 | Toast 提示 |
 
 > 云函数内部一律用 `try/catch` 包裹，禁止把异常原样抛到前端；敏感字段（身份证号、openid）只存哈希或留云端，不进 `data` 下发。
+
+## 8. 登录态约定（前端，见 utils/auth.js）
+
+前端登录态由 `utils/auth.js` 管理，storage 契约如下，云函数（task-011 `auth`）必须按此返回：
+
+- storage key：
+  - `token`：自定义登录态（由 `auth` 云函数签发，`request.js` 自动注入每次调用）
+  - `user`：用户资料对象（JSON 序列化）
+- `auth` 云函数 `action: 'login'` 的返回 `data` 结构必须为：
+  ```json
+  { "token": "<string>", "user": { "id": "<string>", "verified": false } }
+  ```
+  - `user.verified` 为布尔：实名完成后由 task-012 `verify` 云函数写库并回填，前端 `isVerified()` 据此判断。
+  - 敏感字段（openid、手机号、身份证）**只存云端，不得下发进 `user`**，避免本地存储泄露。
+- 登录/重登均为静默操作（`loading: false`），不弹全局 loading，由页面自行控制；登出 `logout()` 会清 storage 并清除 401 重登钩子。
