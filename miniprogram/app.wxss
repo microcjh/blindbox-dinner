@@ -1,0 +1,73 @@
+/* app.wxss — 全局样式与设计 token（对齐 UI 设计文档 v1.0） */
+page {
+  /* 品牌色 */
+  --color-primary: #FF6B4A;      /* 主色 珊瑚橙：食欲 / 惊喜 */
+  --color-secondary: #7C5CFC;    /* 神秘紫：盲盒感 */
+  --color-trust: #16B981;        /* 信任绿：安全 */
+  --color-success: #16B981;
+  --color-error: #FF4D4F;        /* 错误红 */
+  --color-warning: #FFA940;
+
+  /* 背景与文字 */
+  --color-bg: #FFF9F5;           /* 暖白底 */
+  --color-surface: #FFFFFF;      /* 卡片表面 */
+  --color-text: #1F1F1F;         /* 文字主色 */
+  --color-text-sub: #8A8A8A;     /* 文字辅色 */
+
+  /* 圆角 */
+  --radius-btn: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+
+  /* 间距系统（基础单位 4px） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* 阴影 */
+  --shadow-card: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  font-size: 28rpx;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+view, text, button, image, navigator, scroll-view {
+  box-sizing: border-box;
+}
+
+/* 通用容器 */
+.container {
+  min-height: 100vh;
+  padding: var(--space-4);
+}
+
+/* 主按钮（吸底 CTA 通用） */
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  border: none;
+}
+
+.btn-primary[disabled] {
+  background: #FFD0C2;
+  color: #fff;
+}
+
+/* 占位页（task-001 生成的页面骨架临时样式） */
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: var(--color-text-sub);
+  font-size: 28rpx;
+}

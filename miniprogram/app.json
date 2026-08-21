@@ -1,0 +1,39 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    "pages/realname/realname",
+    "pages/event-detail/event-detail",
+    "pages/questionnaire/questionnaire",
+    "pages/invitation/invitation",
+    "pages/review/review",
+    "pages/sos/sos",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTitleText": "盲盒约饭",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#FFF9F5",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#8A8A8A",
+    "selectedColor": "#FF6B4A",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "场次" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于为你推荐附近的盲盒饭局，以及在求助时上报位置"
+    }
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}
