@@ -1,10 +1,16 @@
 // app.js — 小程序入口
 // 职责：初始化云开发环境、维护全局登录态（task-004 会将登录态缓存逻辑迁入 utils/auth.js）
+//
+// 云开发环境（task-002 已注册）：
+//   - envId: cloud1-d5g7ys8ci9724c437
+//   - 套餐：微信体验版（MVP 阶段免费够用；上量后升级标准版）
+//   - 地域：上海（对北京用户体验影响约 30~50ms，可接受）
+//   - 控制台：https://tcb.cloud.tencent.com/dev?envId=cloud1-d5g7ys8ci9724c437
+//   - 更新日期：2026-08-21
 App({
   globalData: {
-    // 云开发环境 ID：在微信开发者工具「云开发」控制台创建环境后回填。
-    // task-002 会正式注册环境并回填此值；为空时默认连接首个云环境。
-    cloudEnv: '',
+    // 云开发环境 ID
+    cloudEnv: 'cloud1-d5g7ys8ci9724c437',
     userInfo: null,
     isVerified: false
   },
@@ -15,7 +21,7 @@ App({
       return;
     }
     wx.cloud.init({
-      env: this.globalData.cloudEnv || undefined,
+      env: this.globalData.cloudEnv,
       traceUser: true
     });
   }

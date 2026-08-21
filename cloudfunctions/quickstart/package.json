@@ -1,0 +1,12 @@
+{
+  "name": "quickstart",
+  "version": "1.0.0",
+  "description": "task-002 首个云函数脚手架，验证 CloudBase 环境联通",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
