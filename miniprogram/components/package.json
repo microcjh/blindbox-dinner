@@ -1,0 +1,10 @@
+{
+  "name": "blindbox-dinner-components",
+  "version": "1.0.0",
+  "description": "前端公共组件库(ui-button/ui-card/ui-tag/empty/skeleton/bottom-bar)及离线单测(Node 环境)",
+  "private": true,
+  "scripts": {
+    "test": "node ui-button.test.js && node ui-tag.test.js && node skeleton.test.js && node ui-card.test.js && node empty.test.js && node bottom-bar.test.js"
+  },
+  "license": "MIT"
+}

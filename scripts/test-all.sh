@@ -44,6 +44,16 @@ if [ -f "$ROOT/miniprogram/utils/package.json" ]; then
   )
 fi
 
+# 额外:前端公共组件库(含 package.json 时)
+if [ -f "$ROOT/miniprogram/components/package.json" ]; then
+  found=1
+  echo "==> testing: miniprogram/components"
+  (
+    cd "$ROOT/miniprogram/components"
+    npm test
+  )
+fi
+
 if [ "$found" -eq 0 ]; then
   echo "no cloudfunctions with package.json; nothing to test."
 fi

@@ -1,0 +1,63 @@
+/* ui-tag.wxss — 标签/徽标(对齐 app.wxss token，带回退值) */
+.ui-tag {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 4rpx 16rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+  border-radius: 999rpx;
+  color: var(--color-primary, #FF6B4A);
+  background: rgba(255, 107, 74, 0.12);
+}
+
+/* 类型配色 */
+.ui-tag--primary {
+  color: var(--color-primary, #FF6B4A);
+  background: rgba(255, 107, 74, 0.12);
+}
+.ui-tag--secondary {
+  color: var(--color-secondary, #7C5CFC);
+  background: rgba(124, 92, 252, 0.12);
+}
+.ui-tag--trust {
+  color: var(--color-trust, #16B981);
+  background: rgba(22, 185, 129, 0.12);
+}
+.ui-tag--success {
+  color: var(--color-success, #16B981);
+  background: rgba(22, 185, 129, 0.12);
+}
+.ui-tag--warning {
+  color: var(--color-warning, #FFA940);
+  background: rgba(255, 169, 64, 0.14);
+}
+.ui-tag--error {
+  color: var(--color-error, #FF4D4F);
+  background: rgba(255, 77, 79, 0.12);
+}
+
+/* 描边样式 */
+.ui-tag--plain {
+  background: transparent;
+  border: 2rpx solid currentColor;
+}
+
+/* 小尺寸 */
+.ui-tag--sm {
+  padding: 2rpx 12rpx;
+  font-size: 20rpx;
+}
+
+/* 方角 */
+.ui-tag--square {
+  border-radius: 6rpx;
+}
+
+.ui-tag__close {
+  margin-left: 8rpx;
+  font-size: 28rpx;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.7;
+}

@@ -1,0 +1,5 @@
+<!-- ui-tag：标签/徽标。默认插槽放文案；closable 时右侧出现关闭按钮 -->
+<view class="ui-tag {{tagClass}}">
+  <slot></slot>
+  <view wx:if="{{closable}}" class="ui-tag__close" catchtap="onClose" aria-label="关闭">×</view>
+</view>

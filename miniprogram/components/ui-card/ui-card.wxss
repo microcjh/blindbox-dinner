@@ -1,0 +1,41 @@
+/* ui-card.wxss — 表面卡片(对齐 app.wxss token，带回退值) */
+.ui-card {
+  background: var(--color-surface, #FFFFFF);
+  border-radius: var(--radius-card, 12rpx);
+  box-shadow: var(--shadow-card, 0 4rpx 16rpx rgba(0, 0, 0, 0.06));
+  overflow: hidden;
+}
+
+.ui-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 24rpx 0;
+}
+
+.ui-card__titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-card__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--color-text, #1F1F1F);
+}
+
+.ui-card__subtitle {
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  color: var(--color-text-sub, #8A8A8A);
+}
+
+.ui-card__body {
+  padding: 24rpx;
+}
+
+.ui-card__footer {
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx 24rpx;
+}

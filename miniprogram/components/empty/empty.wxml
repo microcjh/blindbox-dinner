@@ -1,0 +1,7 @@
+<!-- empty：空状态占位。emoji 图标避免图片资源(控制主包体积)；action 插槽放引导按钮 -->
+<view class="ui-empty">
+  <view class="ui-empty__icon" aria-hidden="true">{{icon}}</view>
+  <view class="ui-empty__text">{{text}}</view>
+  <view wx:if="{{desc}}" class="ui-empty__desc">{{desc}}</view>
+  <slot name="action" wx:if="{{showAction}}"></slot>
+</view>

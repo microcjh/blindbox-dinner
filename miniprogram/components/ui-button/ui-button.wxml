@@ -1,0 +1,13 @@
+<!-- ui-button：统一行动按钮，支持类型/尺寸/加载/禁用/通栏/圆角，
+     并透传 open-type / form-type 以承载微信能力(获取手机号、表单提交等) -->
+<button
+  class="ui-btn {{btnClass}}"
+  hover-class="ui-btn--hover"
+  disabled="{{disabled}}"
+  open-type="{{openType}}"
+  form-type="{{formType}}"
+  bindtap="onTap"
+>
+  <view wx:if="{{loading}}" class="ui-btn__spinner" aria-hidden="true"></view>
+  <slot></slot>
+</button>
