@@ -27,6 +27,23 @@ for dir in "$ROOT"/cloudfunctions/*/; do
   fi
 done
 
+# 额外:前端公共工具层(含 package.json 时)
+if [ -f "$ROOT/miniprogram/utils/package.json" ]; then
+  found=1
+  echo "==> testing: miniprogram/utils"
+  (
+    cd "$ROOT/miniprogram/utils"
+    if [ -f "package-lock.json" ]; then
+      echo "    [lock present] npm ci"
+      npm ci --no-audit --no-fund
+    else
+      echo "    [no lock] npm install (graceful)"
+      npm install --no-audit --no-fund
+    fi
+    npm test
+  )
+fi
+
 if [ "$found" -eq 0 ]; then
   echo "no cloudfunctions with package.json; nothing to test."
 fi
