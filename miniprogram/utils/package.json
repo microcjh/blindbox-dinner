@@ -1,0 +1,10 @@
+{
+  "name": "blindbox-dinner-utils",
+  "version": "1.0.0",
+  "description": "前端公共工具层(request/auth/subscribe)及离线单测(Node 环境)",
+  "private": true,
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT"
+}
