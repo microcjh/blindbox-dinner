@@ -3,9 +3,8 @@
 project.private.config.json
 miniprogram_npm/
 
-# 云函数本地依赖（各自目录安装，不整体提交 node_modules）
+# 云函数本地依赖（不提交 node_modules；但 package-lock.json 须入库以保证 CI 用 npm ci）
 cloudfunctions/**/node_modules/
-cloudfunctions/**/package-lock.json
 
 # 云开发本地调试缓存
 .cloudbase/
