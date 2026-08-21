@@ -107,3 +107,12 @@
 - **唯一索引即业务约束**：`registrations.uniq_user_event` = 防一人重复报名；`payments.transaction_id` = 防支付重复入账；`users.openid` = 防重复账号。新增唯一索引前先确认历史数据不冲突。
 - 复合索引字段顺序即查询顺序：`events.idx_city_district_time` 支持「城市→区→时间」筛选，查询条件必须**从左前缀**命中才能走索引。
 - 所有集合 / 索引变更必须经 `init-db` 云函数落地，**禁止手动在控制台零散建索引**（易遗漏、不可追溯）；变更同步更新 `docs/database-schema.md`。
+
+## 12. 云函数 db 公共模块约定（见 cloudfunctions/common/db.js）
+
+- 所有业务云函数的数据库访问**统一 require `cloudfunctions/common/db.js`**，禁止在各云函数里重复拼 `.where().orderBy().skip().limit().field()`，避免散落与不一致。
+- 查询一律用 `db.query(collectionName, { where, page, pageSize, orderBy, fields })`，返回 `{ code, message, data: { list, total } }`；`total` 由独立 `count()` 链算出，不受 `skip/limit` 影响。
+- **分页**：`page` 从 1 起，`pageSize` 默认 20、上限 100（超界自动截断），内部换算 `skip=(page-1)*size`；前端列表场景必须传 `page` 而非一次性拉全量。
+- **where 透传**：普通对象（如 `{ status: 'open' }`）与 `db.command`（如 `_.in([...])` / `_.gt(...)`）都直接透传，不做二次封装；复合条件在调用方拼好再传入。
+- **字段裁剪**：`fields` 只回传必要字段（如列表只取 `city/district/time/status`），**敏感字段（id_card_hash/openid/face_token）严禁进入 `fields` 下发前端**，降传输体积同时满足隐私合规。
+- `common` 是共享模块而非独立云函数：`scripts/test-all.sh` 只跑其单测、不 `npm install`（mock 内联），也不会被当作部署单元上传。
