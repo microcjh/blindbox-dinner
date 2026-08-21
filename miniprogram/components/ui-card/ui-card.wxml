@@ -1,0 +1,18 @@
+<!-- ui-card：表面卡片。标题/副标题 + 默认插槽(正文) + header/footer 具名插槽 -->
+<view class="ui-card">
+  <view wx:if="{{title || subtitle || hasHeaderSlot}}" class="ui-card__header">
+    <view class="ui-card__titles">
+      <text wx:if="{{title}}" class="ui-card__title">{{title}}</text>
+      <text wx:if="{{subtitle}}" class="ui-card__subtitle">{{subtitle}}</text>
+    </view>
+    <slot name="header" wx:if="{{hasHeaderSlot}}"></slot>
+  </view>
+
+  <view class="ui-card__body" style="padding: {{padding}};">
+    <slot></slot>
+  </view>
+
+  <view wx:if="{{hasFooterSlot}}" class="ui-card__footer">
+    <slot name="footer"></slot>
+  </view>
+</view>

@@ -1,0 +1,5 @@
+<!-- bottom-bar：吸底操作条。安全区用 CSS env() 兼容刘海屏，无需 JS 读取。
+     默认插槽放 CTA 内容(通常是 ui-button) -->
+<view class="ui-bottom-bar {{fixed ? 'ui-bottom-bar--fixed' : ''}} {{bordered ? 'ui-bottom-bar--bordered' : ''}}">
+  <slot></slot>
+</view>

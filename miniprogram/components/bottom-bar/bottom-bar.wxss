@@ -1,0 +1,23 @@
+/* bottom-bar.wxss — 吸底操作条 */
+.ui-bottom-bar {
+  /* 安全区：优先 env()，旧系统回退 constant()；再不行给 0 */
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom, constant(safe-area-inset-bottom, 0rpx)));
+  padding-left: 24rpx;
+  padding-right: 24rpx;
+  padding-top: 16rpx;
+  background: var(--color-surface, #FFFFFF);
+}
+
+.ui-bottom-bar--fixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  /* 固定吸底时给页面底部预留占位空间，由页面自行加 padding-bottom */
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.ui-bottom-bar--bordered {
+  border-top: 2rpx solid rgba(0, 0, 0, 0.06);
+}

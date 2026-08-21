@@ -1,0 +1,32 @@
+/* empty.wxss — 空状态占位 */
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64rpx 32rpx;
+  box-sizing: border-box;
+}
+
+.ui-empty__icon {
+  font-size: 96rpx;
+  line-height: 1;
+  margin-bottom: 24rpx;
+}
+
+.ui-empty__text {
+  font-size: 28rpx;
+  color: var(--color-text, #1F1F1F);
+  font-weight: 500;
+}
+
+.ui-empty__desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: var(--color-text-sub, #8A8A8A);
+  text-align: center;
+}
+
+.ui-empty__action {
+  margin-top: 32rpx;
+}

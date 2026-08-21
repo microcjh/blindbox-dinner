@@ -1,0 +1,101 @@
+/* ui-button.wxss — 行动按钮(对齐 app.wxss 品牌 token，带回退值) */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 32rpx;
+  min-height: 88rpx;
+  border: none;
+  border-radius: var(--radius-btn, 8rpx);
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #fff;
+  background: var(--color-primary, #FF6B4A);
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.ui-btn::after {
+  /* 去掉原生 button 默认边框 */
+  border: none;
+}
+
+.ui-btn--hover {
+  opacity: 0.85;
+}
+
+/* 类型 */
+.ui-btn--primary {
+  background: var(--color-primary, #FF6B4A);
+  color: #fff;
+}
+.ui-btn--secondary {
+  background: var(--color-secondary, #7C5CFC);
+  color: #fff;
+}
+.ui-btn--danger {
+  background: var(--color-error, #FF4D4F);
+  color: #fff;
+}
+.ui-btn--ghost {
+  background: transparent;
+  color: var(--color-primary, #FF6B4A);
+  border: 2rpx solid var(--color-primary, #FF6B4A);
+}
+
+/* 尺寸 */
+.ui-btn--lg {
+  min-height: 96rpx;
+  padding: 0 40rpx;
+  font-size: 32rpx;
+}
+.ui-btn--sm {
+  min-height: 64rpx;
+  padding: 0 24rpx;
+  font-size: 26rpx;
+  border-radius: calc(var(--radius-btn, 8rpx) - 2rpx);
+}
+
+/* 通栏 */
+.ui-btn--block {
+  display: flex;
+  width: 100%;
+}
+
+/* 方角(非圆角按钮) */
+.ui-btn--square {
+  border-radius: 4rpx;
+}
+
+/* 加载：按钮半透明且不可点 */
+.ui-btn--loading {
+  opacity: 0.7;
+}
+
+/* 禁用：统一灰态，覆盖类型色 */
+.ui-btn--disabled,
+.ui-btn[disabled] {
+  background: #FFD0C2 !important;
+  color: #fff !important;
+  border-color: #FFD0C2 !important;
+  opacity: 1 !important;
+}
+
+/* 加载旋转图标(纯 CSS) */
+.ui-btn__spinner {
+  width: 30rpx;
+  height: 30rpx;
+  margin-right: 12rpx;
+  border: 4rpx solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ui-btn-spin 0.7s linear infinite;
+}
+
+@keyframes ui-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

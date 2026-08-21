@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-21
+
+### Added
+- 公共组件库 `miniprogram/components`：`ui-button`（类型/尺寸/加载/禁用/通栏/圆角/open-type 透传）、`ui-card`（标题/副标题/header/footer 插槽）、`ui-tag`（类型/描边/可关闭）、`empty`（空状态占位）、`skeleton`（加载骨架屏）、`bottom-bar`（吸底操作条 + 安全区适配）
+- 组件离线单测（Node 环境，mock 微信运行时）：`__mocks__/harness.js` + 6 个 `*test.js`，覆盖 observer 计算、点击拦截、事件触发；`scripts/test-all.sh` 已纳入组件测试
+
+### Changed
+- `docs/coding-style.md` 新增第 10 节「组件约定」（命名 / 插槽 / styleIsolation / 品牌 token 回退 / 安全区适配 / 测试）
+
 ## [0.1.1] - 2026-08-21
 
 ### Added
@@ -27,6 +36,7 @@
 - 全局品牌设计 token（珊瑚橙 `#FF6B4A` / 神秘紫 `#7C5CFC` / 信任绿 `#16B981` + 4px 间距 / 8·12·16 圆角）
 - CI 工作流（`ci.yml` 云函数测试 + 文档检查）、PR 模板、CODEOWNERS、CONTRIBUTING
 
-[Unreleased]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/microcjh/blindbox-dinner/releases/tag/v0.1.0

@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "usingComponents": {},
+  "options": {
+    "addGlobalClass": true,
+    "multipleSlots": false,
+    "styleIsolation": "apply-shared"
+  }
+}

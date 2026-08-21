@@ -90,3 +90,12 @@
 - 授权结果：`accept` 写入 granted 缓存；`reject` 不缓存；`ban`（errCode 20004）标记不再弹窗，需引导去设置页。
 - 订阅失败**绝不可阻断主流程**（如报名成功但用户拒订阅，饭局照常），`requestSubscribe` 始终 `resolve` 不 `reject`。
 - 登出时 `auth.logout()` 应一并 `subscribe.clearGranted()` 清授权缓存。
+
+## 10. 组件约定（公共组件库，见 miniprogram/components）
+
+- 组件统一放在 `miniprogram/components/<name>/`，每个组件一个目录，含 `.js` / `.json` / `.wxml` / `.wxss` 四件套，命名小写下划线（如 `ui-button/`、`bottom-bar/`）。
+- 组件定义统一 `options: { addGlobalClass: true, styleIsolation: 'apply-shared' }`，保证 `app.wxss` 的品牌 token（CSS 变量）与页面工具类可在组件内生效；含多个具名插槽的组件（ui-card、empty）同时声明 `multipleSlots: true`。
+- 颜色 / 圆角 / 间距一律引用 `app.wxss` 的 CSS 变量，写法 `var(--color-primary, #FF6B4A)`，**必须带回退值**——防止组件在隔离样式下因变量缺失而丢色。
+- 交互状态（type / size / loading / disabled / block 等）由 `observers` 计算最终 class 字符串，不在 WXML 里写复杂表达式；`loading` 或 `disabled` 时必须拦截点击（`triggerEvent('tap')` 不触发），避免重复提交。
+- 资源纪律：图标优先用 emoji（如 `empty` 的 🍽️）或字体图标，不引入图片资源以控主包体积；刘海屏安全区用 CSS `env(safe-area-inset-bottom)`（见 `bottom-bar`），不依赖 JS 读取系统信息，保持组件零副作用。
+- 测试：组件逻辑单测在 Node 环境跑（见 `miniprogram/components/*test.js` + `__mocks__/harness.js`），mock `global.Component` / `global.wx`，覆盖 observer 计算、点击拦截、事件触发；`scripts/test-all.sh` 已纳入，CI 同款、与云函数单测共用闸门。

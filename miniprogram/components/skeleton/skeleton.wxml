@@ -1,0 +1,16 @@
+<!-- skeleton：加载骨架。loading=true 显示占位；loading=false 渲染默认插槽真实内容 -->
+<view class="ui-skeleton">
+  <block wx:if="{{loading}}">
+    <view wx:if="{{avatar}}" class="ui-skeleton__avatar"></view>
+    <view class="ui-skeleton__main">
+      <view wx:if="{{title}}" class="ui-skeleton__title"></view>
+      <view
+        wx:for="{{rowArray}}"
+        wx:key="*this"
+        class="ui-skeleton__row"
+        style="width: {{index === rowArray.length - 1 ? lastRowWidth : '100%'}};"
+      ></view>
+    </view>
+  </block>
+  <slot wx:else></slot>
+</view>
