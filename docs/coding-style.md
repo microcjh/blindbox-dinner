@@ -99,3 +99,11 @@
 - 交互状态（type / size / loading / disabled / block 等）由 `observers` 计算最终 class 字符串，不在 WXML 里写复杂表达式；`loading` 或 `disabled` 时必须拦截点击（`triggerEvent('tap')` 不触发），避免重复提交。
 - 资源纪律：图标优先用 emoji（如 `empty` 的 🍽️）或字体图标，不引入图片资源以控主包体积；刘海屏安全区用 CSS `env(safe-area-inset-bottom)`（见 `bottom-bar`），不依赖 JS 读取系统信息，保持组件零副作用。
 - 测试：组件逻辑单测在 Node 环境跑（见 `miniprogram/components/*test.js` + `__mocks__/harness.js`），mock `global.Component` / `global.wx`，覆盖 observer 计算、点击拦截、事件触发；`scripts/test-all.sh` 已纳入，CI 同款、与云函数单测共用闸门。
+
+## 11. 数据库集合与索引约定（见 docs/database-schema.md）
+
+- 集合统一放云开发文档数据库，命名用**复数**；逻辑外键用「字段存对方 `_id`」实现，查询靠 `where({ _id: db.command.in([...]) })` 批量取，**禁止文档库联表**。
+- 初始化走 **`init-db` 云函数**（幂等）：集合已存在吞 `-502005`、索引已存在吞 `-502007`，可重复安全运行；索引定义集中在 `index.js` 的 `INDEXES` 常量，与 `docs/database-schema.md` 第 3 节保持一致。
+- **唯一索引即业务约束**：`registrations.uniq_user_event` = 防一人重复报名；`payments.transaction_id` = 防支付重复入账；`users.openid` = 防重复账号。新增唯一索引前先确认历史数据不冲突。
+- 复合索引字段顺序即查询顺序：`events.idx_city_district_time` 支持「城市→区→时间」筛选，查询条件必须**从左前缀**命中才能走索引。
+- 所有集合 / 索引变更必须经 `init-db` 云函数落地，**禁止手动在控制台零散建索引**（易遗漏、不可追溯）；变更同步更新 `docs/database-schema.md`。
