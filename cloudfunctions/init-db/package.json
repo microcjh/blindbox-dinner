@@ -1,0 +1,12 @@
+{
+  "name": "init-db",
+  "version": "1.0.0",
+  "description": "task-008: 创建 12 个集合并建索引（幂等初始化）",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

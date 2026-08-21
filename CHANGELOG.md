@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-21
+
+### Added
+- 数据库初始化云函数 `cloudfunctions/init-db`：幂等创建 12 个集合（users / realname_verify / questionnaires / events / match_groups / registrations / payments / restaurants / reviews / blacklist / sos / memberships）并按技术方案建 24 个索引（含唯一索引防重复约束）
+- 新增 `docs/database-schema.md`：12 集合字段 + 24 索引定义权威表（与 init-db 的 `INDEXES` 常量一致）
+- `init-db` 云函数单测（mock wx-server-sdk）：覆盖首次创建、幂等跳过、索引数量与唯一约束；已纳入 `scripts/test-all.sh`
+
+### Changed
+- `docs/coding-style.md` 新增第 11 节「数据库集合与索引约定」（复数命名 / 逻辑外键 / 幂等初始化 / 唯一索引即业务约束 / 复合索引前缀命中）
+
 ## [0.1.2] - 2026-08-21
 
 ### Added
