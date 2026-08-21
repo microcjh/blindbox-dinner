@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-21
+
+### Added
+- 云函数侧 db 公共模块 `cloudfunctions/common/db.js`：统一封装 `query({where,page,pageSize,orderBy,fields})` 返回 `{list,total}`（total 由独立 count 链算出）+ `getById/insert/update/remove` 基础 CRUD
+- `query` 支持：分页自动换算 skip/limit（pageSize 默认 20 上限 100）、单组/多组 orderBy、fields 字段裁剪、`where` 普通对象与 `db.command`（_.in/_.gt 等）透传
+- `common` 单测（mock wx-server-sdk 链式 db）：覆盖分页换算、where 透传、排序、字段裁剪、CRUD；`scripts/test-all.sh` 已纳入（共享模块只跑测试、不 install）
+- `coding-style.md` 新增第 12 节「云函数 db 公共模块约定」（统一走 common/db、字段裁剪降传输、敏感字段禁下发）
+
 ## [0.1.3] - 2026-08-21
 
 ### Added

@@ -10,8 +10,15 @@ found=0
 
 for dir in "$ROOT"/cloudfunctions/*/; do
   if [ -f "$dir/package.json" ]; then
-    found=1
     name="$(basename "$dir")"
+    # common 是共享模块：只跑单测（mock 内联，不依赖真实 wx-server-sdk），不 install、不作为部署单元
+    if [ "$name" = "common" ]; then
+      echo "==> testing: common (shared module, mock-only)"
+      ( cd "$dir" && npm test )
+      found=1
+      continue
+    fi
+    found=1
     echo "==> testing: $name"
     (
       cd "$dir"

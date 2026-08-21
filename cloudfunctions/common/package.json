@@ -1,0 +1,12 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "description": "task-009: 云函数侧数据库公共模块（where/page/排序/字段裁剪/CRUD）",
+  "main": "db.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
