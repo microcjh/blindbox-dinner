@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-22
+
+### Added
+- 餐厅库种子数据云函数 `cloudfunctions/seed-restaurants`：幂等导入 27 家北京探店餐厅（覆盖京菜/烤鸭/川菜/火锅/日料/西餐/粤菜/闽菜/云南菜/杭帮菜/湘菜/小吃多菜系），字段严格对齐 `restaurants` 集合（name/address/cuisine/avg_price/rating/lng/lat/verified）
+- 导入逻辑（index.js）以 `name + address` 去重键幂等写入（已存在跳过），复用 `common/db` 的 `query/insert`，返回 `{ code, message, data: { inserted, skipped, total } }`
+- 种子数据（data.js）与导入逻辑分离；`validate()` 校验条数与必填字段；单测覆盖首次插入 / 二次全跳过（幂等）/ 去重键 / 字段完整
+- `coding-style.md` 新增第 13 节「种子数据约定」（集中存放 / 幂等去重键 / 字段对齐 Schema / 仅手动触发一次）
+
 ## [0.1.4] - 2026-08-21
 
 ### Added

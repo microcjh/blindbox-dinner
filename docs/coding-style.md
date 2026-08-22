@@ -116,3 +116,10 @@
 - **where 透传**：普通对象（如 `{ status: 'open' }`）与 `db.command`（如 `_.in([...])` / `_.gt(...)`）都直接透传，不做二次封装；复合条件在调用方拼好再传入。
 - **字段裁剪**：`fields` 只回传必要字段（如列表只取 `city/district/time/status`），**敏感字段（id_card_hash/openid/face_token）严禁进入 `fields` 下发前端**，降传输体积同时满足隐私合规。
 - `common` 是共享模块而非独立云函数：`scripts/test-all.sh` 只跑其单测、不 `npm install`（mock 内联），也不会被当作部署单元上传。
+
+## 13. 种子数据约定（见 cloudfunctions/seed-restaurants）
+
+- 种子数据集中放在云函数 `cloudfunctions/seed-restaurants/data.js`，与导入逻辑 `index.js` 分离，便于维护与代码审阅。
+- 导入**幂等**：以 `name + address` 作为去重键（先 `query` 是否已存在，已存在则跳过），可重复运行不重复插入；返回统一结构 `{ code, message, data: { inserted, skipped, total } }`。
+- 数据字段严格对齐集合 Schema（restaurants 为 `name/address/cuisine/avg_price/rating/lng/lat/verified`），坐标用真实经纬度，`verified` 默认 false；新增/修改种子需同步 `docs/database-schema.md`。
+- 种子云函数**仅在首次部署或数据更新时手动触发一次**，不进日常业务流；`data.js` 顶部 `validate()` 校验条数与必填字段，单测覆盖幂等 / 去重 / 条数。

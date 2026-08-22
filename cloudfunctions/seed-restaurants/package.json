@@ -1,0 +1,12 @@
+{
+  "name": "seed-restaurants",
+  "version": "1.0.0",
+  "description": "task-010 餐厅库种子数据导入（幂等，按 name+address 去重）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  },
+  "scripts": {
+    "test": "node test.js"
+  }
+}
