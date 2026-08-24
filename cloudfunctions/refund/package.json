@@ -1,0 +1,12 @@
+{
+  "name": "refund",
+  "version": "1.0.0",
+  "description": "退款云函数（task-021）",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

@@ -14,6 +14,9 @@
 - **前端业务门面** `miniprogram/services/review.js`（submitReview/listReviews）+ `blacklist.js`（reportBlacklist/listMyBlacklist），loading 语义对齐 §23；各 11/9 项单测，纳入 services/package.json 闸门。
 - **详情页接通饭后沉淀**：`pages/event-detail` 新增「饭后沉淀」区块（仅当 `syncMyTable()` 命中本场即本桌成员时显示），列出同桌其他成员 + 评价/举报按钮；评价弹层 1–5 星、举报弹层原因输入（maxlength 50）；`utils/auth` 新增 `getUid()`（`services/auth` 同步暴露）用于从 members 过滤自己。
 - `coding-style.md` 新增第 23 节「饭后双向评价 + 黑名单约定」；schema 中 reviews/blacklist 集合与索引（task-008 已预留）正式启用。
+- **退款云函数 `cloudfunctions/refund`（task-021）**：`apply` 须登录 + 仅本人 `registrations.status==='paid'` 可退（`pending`/已退/其他态 409）；查 `payments` 取 `transaction_id`（无记录/无 transaction_id → 409）；落 `refunds` + 翻转 `registrations(refunded)`；幂等（已有退款单返回 `{duplicated:true}`）；未配置商户号走 devStub 占位（不触真实计费）。`query` 按 registration_id 查退款单（浏览类）。错误码 401/400/404/409/503；复用 common/db + common/session + common/pay；12 项单测。
+- **前端业务门面** `miniprogram/services/refund.js`（applyRefund/queryRefund），loading 语义对齐；5 项单测，纳入 services/package.json 闸门。
+- **profile 接通退款入口**：`deriveMyRow` 新增 `canRefund = price>0 && status==='paid'`（与 canPay 互斥）；`pages/profile` 对已支付卡片显示「申请退款」按钮（`onRefund` 二次确认 → `applyRefund` → 刷新）；`coding-style.md` 新增第 20.1 节退款约定。
 
 ## [0.1.14] - 2026-08-24
 

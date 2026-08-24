@@ -57,6 +57,7 @@ function deriveMyRow(reg) {
     state,
     stateText,
     canPay: price > 0 && status === 'pending', // 仅「付费 + 待支付」暴露继续支付入口
+    canRefund: price > 0 && status === 'paid', // 仅「付费 + 已支付」暴露申请退款入口
   };
 }
 

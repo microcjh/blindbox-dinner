@@ -70,6 +70,18 @@
             data-id="{{item.eventId}}"
             catchtap="onContinuePay"
           >继续支付</ui-button>
+
+          <ui-button
+            wx:if="{{item.canRefund}}"
+            slot="footer"
+            class="reg-card__refund"
+            type="ghost"
+            size="small"
+            block="{{true}}"
+            loading="{{refundingId === item.eventId}}"
+            data-id="{{item.eventId}}"
+            catchtap="onRefund"
+          >申请退款</ui-button>
         </ui-card>
       </view>
     </ui-skeleton>
