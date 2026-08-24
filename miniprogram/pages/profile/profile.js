@@ -5,6 +5,7 @@ const eventService = require('../../services/event');
 const authService = require('../../services/auth');
 const paymentService = require('../../services/payment');
 const refundService = require('../../services/refund');
+const matchService = require('../../services/match');
 const { formatEventTime, formatPrice } = require('../../utils/format');
 
 Page({
@@ -16,6 +17,8 @@ Page({
     notFound: false, // 未登录占位
     payingId: '', // 正在支付的 eventId（控制按钮 loading）
     refundingId: '', // 正在退款的 eventId（控制按钮 loading）
+    tablesLoading: false, // 我的桌加载态
+    tables: [], // 我参与凑桌成功的桌
   },
 
   onLoad() {
@@ -33,8 +36,9 @@ Page({
     this.setData({ loggedIn, isVerified });
     if (loggedIn) {
       this.loadMine();
+      this.loadMyTables();
     } else {
-      this.setData({ loading: false, rows: [], notFound: true });
+      this.setData({ loading: false, rows: [], notFound: true, tables: [] });
     }
   },
 
@@ -53,9 +57,36 @@ Page({
     }
   },
 
+  // 我的桌：列出我参与凑桌成功的场次（task-025）
+  async loadMyTables() {
+    this.setData({ tablesLoading: true });
+    try {
+      const res = await matchService.myMatches();
+      const list = (res && res.list) || [];
+      const uid = authService.getUid ? authService.getUid() : '';
+      const tables = list.map((m) => {
+        const ev = m.event || {};
+        return {
+          id: m.id,
+          eventId: ev.id || m.event_id,
+          city: ev.city || '',
+          district: ev.district || '',
+          timeText: ev.time ? formatEventTime(ev.time) : '',
+          priceText: typeof ev.price === 'number' ? formatPrice(ev.price) : '',
+          memberCount: (m.members || []).length,
+          matchScore: typeof m.match_score === 'number' ? m.match_score : null,
+          isMine: !!uid && (m.members || []).includes(uid),
+        };
+      });
+      this.setData({ tables, tablesLoading: false });
+    } catch (e) {
+      this.setData({ tables: [], tablesLoading: false });
+    }
+  },
+
   onPullDownRefresh() {
     if (this.data.loggedIn) {
-      this.loadMine().then(() => wx.stopPullDownRefresh());
+      Promise.all([this.loadMine(), this.loadMyTables()]).then(() => wx.stopPullDownRefresh());
     } else {
       wx.stopPullDownRefresh();
     }

@@ -27,6 +27,8 @@
 - **匹配算法接入问卷（task-024 下）**：改造 `cloudfunctions/match` 的 `handleRun`——凑桌前批量读候选人问卷公开维度，以首候选为锚按 `scorePair`（budget 接近度 30% + topics Jaccard 重合度 35% + personality 同频 20% + 无冲突 15%，taboo 互相命中强惩罚 ×0.6）同频优先选人，取前 4 人成一桌（上限 6）；**无问卷时回退纯先到先得**（保开桌下限不变）。落库 `match_groups.match_score`（两两均值）供前端「同频度」展示；已支付门槛 / 4 人下限 / matched 防重复 / 幂等翻转约束与 §22 完全一致。新增 15 项单测（同频优先 / 回退 / taboo 冲突挤出），match 单测合计 32 项。
 - **前端问卷门面 + 页接通（task-024）**：`miniprogram/services/questionnaire.js`（submitQuestionnaire/getQuestionnaire/getPublicDimension，loading 语义对齐 §16）+ 14 项单测，纳入 services/package.json 闸门；`pages/questionnaire` 由空壳接通（口味/性格/预算输入 + 忌口·话题·期待 chips 多选 + 实名前置分流 + 已填回显 + 提交回退/回首页）。
 - `coding-style.md` 新增第 26 节「问卷 + 同频匹配约定」；schema 中 `questionnaires` 集合（task-008 预留）正式启用写入链路。
+- **我的桌展示（task-025）**：`pages/profile` 已登录态并行接入 `matchService.myMatches()`，新增「我的桌」区块展示凑桌成功的同频饭局（场次城市·区 / 时间 / 价格 / 同桌人数 / **同频分 match_score**），与「我的饭局」双区块并列；卡片点击进 `event-detail`。`coding-style.md` 新增 §27。
+- **修复：match_score 不返回（task-024 遗留）**：`cloudfunctions/match` 的 `MATCH_FIELDS` 漏写 `match_score`，导致 `myMatches` 查不到同频分；已补齐并补单测断言（myMatches 返回含 match_score），match 单测合计 33 项。
 
 ## [0.1.14] - 2026-08-24
 

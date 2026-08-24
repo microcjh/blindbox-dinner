@@ -105,3 +105,80 @@
 .reg-card__pay {
   margin-top: var(--space-3);
 }
+
+/* 我的桌区块（task-025） */
+.tables {
+  margin-top: var(--space-5);
+}
+
+.tables__head {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: var(--space-3);
+  padding: 0 var(--space-1);
+}
+
+.tables__title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.tables__hint {
+  font-size: 22rpx;
+  color: var(--color-text-sub);
+  margin-left: var(--space-2);
+}
+
+.tables__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.table-card {
+  background: var(--color-surface);
+}
+
+.table-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-card__score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.table-card__score-num {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.table-card__score-label {
+  font-size: 20rpx;
+  color: var(--color-text-sub);
+  margin-top: 2rpx;
+}
+
+.tables__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-5) var(--space-3);
+}
+
+.tables__empty-text {
+  font-size: 26rpx;
+  color: var(--color-text-sub);
+}
+
+.tables__empty-sub {
+  font-size: 22rpx;
+  color: var(--color-text-sub);
+  margin-top: var(--space-2);
+}
