@@ -156,3 +156,14 @@
 - **发起场次强实名**：`create` 复用「强实名护城河」，仅 `verified=true` 用户可发起（未实名返回 `402` 引导去实名页）；参数校验 `capacity ∈ [1,6]`（每桌 ≤6，见 `database-schema`）、`time` 须晚于当前、`price > 0`；落库 `registered=0`、`status = cap>0 ? 'open' : 'full'`。
 - **字段裁剪纪律**：`list` 只用 `fields` 回传列表所需字段（`_id/city/district/restaurant_id/time/price/capacity/registered/status`），events 本身无敏感字段，但遵循 §12 一致的裁剪风格；前端引用统一用 `id`（`_id` 重命名）。
 - **错误码语义**：未登录 `401`、参数 `400`、未实名 `402`、不存在 `404`、异常 `500`；与 §7 统一错误码表一致。
+
+## 18. register 报名云函数约定（见 cloudfunctions/register）
+
+- **报名复用强实名护城河**：`register` / `unregister` 与 events `create` 一致，仅 `verified=true` 用户可操作（未实名返回 `402` 引导去实名页）；`my` 仅查询当前用户，同样需登录态（`401`）。
+- **报名即锁座（pending 预留支付）**：`register` 落库 `registrations.status='pending'`，并 `events.registered + 1`；达容量（`registered >= capacity`）立即翻 `status='full'`。**`registered` 计所有未取消报名（含 pending）**，座位在报名时即预留，支付见后续 `payment` 任务（届时 pending→paid）。
+- **一人一场次一条报名**：`registrations.uniq_user_event (user_id, event_id)` 唯一索引是 DB 级兜底；业务层先 `query` 预检「已报名」再插入，返回 `409`（避免依赖不同 SDK 版本的唯一键错误码解析）；唯一索引仍保留作并发防重双保险。
+- **不可报名态一律 `409`**：场次 `status !== 'open'`、或 `registered >= capacity`（满员）均返回 `409`，文案区分「已满/已关闭/已报名」。
+- **取消即减员 + 状态回滚**：`unregister` 删除 `registrations` 后 `events.registered - 1`；若此前为 `full` 且减员后有余位（`registered < capacity`）则回 `open`。**已支付报名（status='paid'）不允许在此取消**，返回 `409` 引导走退款流程（退款由 `payment` 任务处理）。
+- **`my` 关联场次摘要不联表**：`my` 取当前用户 `registrations`（`orderBy created_at desc`）后，逐条 `getById('events')` 附 `_id/city/district/time/price/capacity/registered/status/restaurant_id` 摘要（单用户报名数受 `capacity≤6` 约束，N 次小查询可接受）；不下发明文身份证等敏感信息（registrations 本无敏感字段）。
+- **错误码语义**：未登录 `401`、参数 `400`、未实名 `402`、场次不存在 `404`、冲突 `409`（已报名/已满/已支付）、异常 `500`；与 §7 统一错误码表一致。
+- **数据访问统一走 `common/db`**：`register` 用 `query`（预检）/ `insert` / `update`（按 `_id` 增减 `registered`、翻 `status`）；`unregister` 用 `query`（查现存）/ `remove`（按 `where` 删除）/ `update`；`my` 用 `query` + `getById`。本文件不裸拼查询链。

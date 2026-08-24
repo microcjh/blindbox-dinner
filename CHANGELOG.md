@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-08-24
+
+### Added
+- 报名（注册场次）云函数 `cloudfunctions/register`：`action:'register'`（令牌校验 + 强实名 402 + 场次存在 404 + 状态需 open/未满 409 + 唯一索引防重复 409 + 落库 status=pending + events.registered+1、满员翻 full）、`action:'unregister'`（取消报名减员、由 full 回 open、已支付 409 需走退款）、`action:'my'`（我的报名 + 关联场次摘要）（task-015）
+- `register` 复用「强实名护城河」（未实名 402）；报名即锁座（pending 预留支付），`registered` 计所有未取消报名；一人一场次一条报名（DB 唯一索引 `(user_id,event_id)` + 业务预检双保险）；错误码 未登录 401 / 参数 400 / 未实名 402 / 不存在 404 / 冲突 409 / 异常 500
+- `register` 单测 23 项（mock wx-server-sdk 链式 + 复用真实 common/db、common/session）：register 成功落库+registered+1+满员翻 full / 未登录 401 / 未实名 402 / 缺 event_id 400 / 不存在 404 / 已满 409 / 重复报名 409、unregister 成功减员 / 未报名 404 / 已支付 409、my 列表 + 关联场次摘要
+- 修复 register/events mock 缺口：链式 `api` 补顶层 `remove()`（对齐 `common/db.remove` 的 `where` 分支 `collection.where(cond).remove()`）
+- `coding-style.md` 新增第 18 节「register 报名云函数约定」
+
 ## [0.1.9] - 2026-08-24
 
 ### Added
