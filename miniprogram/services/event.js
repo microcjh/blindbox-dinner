@@ -23,6 +23,42 @@
 
 const { callFunction } = require('../utils/request');
 const auth = require('../utils/auth');
+const { formatEventTime, formatPrice } = require('../utils/format');
+
+/**
+ * 把 register.my 返回的一条报名记录派生为「我的报名」列表展示行。
+ * 纯函数（无 wx 依赖），便于单测与页面复用。
+ * @param {Object} reg {status, event:{id,city,district,time,price,capacity,registered,...}}
+ * @returns {Object} 展示行 {regId,eventId,city,district,timeText,priceText,price,seatsText,state,stateText,canPay}
+ */
+function deriveMyRow(reg) {
+  const ev = (reg && reg.event) || {};
+  const price = Number(ev.price) || 0;
+  const status = reg && reg.status;
+  // 付费 + pending → 待支付；付费 + paid → 已支付；免费 + pending → 已报名
+  let state = 'joined';
+  let stateText = '已报名';
+  if (price > 0 && status === 'pending') {
+    state = 'unpaid';
+    stateText = '待支付';
+  } else if (price > 0 && status === 'paid') {
+    state = 'joined';
+    stateText = '已支付';
+  }
+  return {
+    regId: reg && reg.id,
+    eventId: ev.id,
+    city: ev.city || '',
+    district: ev.district || '',
+    timeText: formatEventTime(ev.time),
+    priceText: formatPrice(price),
+    price,
+    seatsText: `${ev.registered || 0}/${ev.capacity || 0}`,
+    state,
+    stateText,
+    canPay: price > 0 && status === 'pending', // 仅「付费 + 待支付」暴露继续支付入口
+  };
+}
 
 /**
  * 公开浏览场次列表（默认只出可报名）。
@@ -113,4 +149,5 @@ module.exports = {
   register,
   unregister,
   myRegistrations,
+  deriveMyRow,
 };

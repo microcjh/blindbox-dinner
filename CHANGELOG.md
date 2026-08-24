@@ -8,6 +8,18 @@
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-08-24
+
+### Added
+- **我的报名页（profile tab）**：把原"紧急求助"占位页改造为"我的饭局"列表，消费 `register.my` 接口
+  - 列表展示城市/区、时间、价格、座位进度，按状态派生标签（已报名/待支付/已支付）
+  - 付费 + 待支付项底部「继续支付」按钮，接入 `paymentService.createPrepay + pay`（与详情页同源，devStub 直接成功）
+  - 未登录 → `ui-empty` 引导去登录；骨架/空态/下拉刷新；卡片点击进 `event-detail`
+- `services/event.deriveMyRow(reg)` 纯函数：把报名记录派生为展示行，便于单测（event.test.js 第8~11项）
+
+### Changed
+- profile 导航栏标题由"紧急求助"改为"我的"
+
 ## [0.1.12] - 2026-08-24
 
 ### Added

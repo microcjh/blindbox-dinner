@@ -1,1 +1,107 @@
-/* 紧急求助 页面样式（由对应任务填充） */
+/* profile — 我的报名（"我的" tab） */
+.profile {
+  min-height: 100vh;
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+/* 头部概览 */
+.profile__header {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.profile__avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  margin-right: var(--space-3);
+}
+
+.profile__meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile__title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.profile__sub {
+  font-size: 24rpx;
+  color: var(--color-text-sub);
+  margin-top: 4rpx;
+}
+
+/* 列表 */
+.profile__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* 报名卡片 */
+.reg-card {
+  background: var(--color-surface);
+}
+
+.reg-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reg-card__loc {
+  display: flex;
+  align-items: baseline;
+}
+
+.reg-card__city {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.reg-card__district {
+  font-size: 26rpx;
+  color: var(--color-text-sub);
+  margin-left: 4rpx;
+}
+
+.reg-card__time {
+  font-size: 26rpx;
+  color: var(--color-text-sub);
+  margin-top: var(--space-2);
+}
+
+.reg-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+}
+
+.reg-card__price {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.reg-card__seats {
+  font-size: 24rpx;
+  color: var(--color-text-sub);
+}
+
+.reg-card__pay {
+  margin-top: var(--space-3);
+}

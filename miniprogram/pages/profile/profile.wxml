@@ -1,3 +1,77 @@
-<view class="placeholder">
-  <text>紧急求助 · 建设中</text>
+<view class="profile">
+  <!-- 头部：用户态概览 -->
+  <view class="profile__header">
+    <view class="profile__avatar" aria-hidden="true">🍽️</view>
+    <view class="profile__meta">
+      <text class="profile__title">我的饭局</text>
+      <text class="profile__sub">{{loggedIn ? (isVerified ? '已实名 · 放心约饭' : '未实名 · 报名前需认证') : '登录后查看你的报名'}}</text>
+    </view>
+  </view>
+
+  <!-- 未登录：引导 -->
+  <ui-empty
+    wx:if="{{notFound}}"
+    icon="👋"
+    text="你还没有登录"
+    desc="登录后即可查看你的盲盒饭局"
+    show-action="{{true}}"
+  >
+    <ui-button slot="action" type="primary" size="large" block="{{true}}" bind:tap="goLogin">去登录</ui-button>
+  </ui-empty>
+
+  <!-- 已登录：骨架 / 列表 / 空 -->
+  <block wx:else>
+    <ui-skeleton loading="{{loading}}" title="{{true}}" row-array="{{[100, 80, 60]}}">
+      <view wx:if="{{rows.length === 0 && !loading}}" class="profile__list">
+        <ui-empty
+          icon="🍜"
+          text="还没有报名任何饭局"
+          desc="去「场次」挑一场盲盒约饭吧"
+          show-action="{{true}}"
+        >
+          <ui-button slot="action" type="primary" size="large" block="{{true}}" bind:tap="goList">去逛逛</ui-button>
+        </ui-empty>
+      </view>
+
+      <view wx:else class="profile__list">
+        <ui-card
+          wx:for="{{rows}}"
+          wx:key="regId"
+          class="reg-card"
+          padding="24rpx"
+          data-id="{{item.eventId}}"
+          bind:tap="goDetail"
+        >
+          <view class="reg-card__top">
+            <view class="reg-card__loc">
+              <text class="reg-card__city">{{item.city}}</text>
+              <text class="reg-card__district" wx:if="{{item.district}}">· {{item.district}}</text>
+            </view>
+            <ui-tag type="{{item.state === 'unpaid' ? 'warning' : 'success'}}" small="{{true}}" plain="{{true}}">
+              {{item.stateText}}
+            </ui-tag>
+          </view>
+
+          <view class="reg-card__time">{{item.timeText}}</view>
+
+          <view class="reg-card__foot">
+            <text class="reg-card__price">{{item.priceText}}</text>
+            <text class="reg-card__seats">已报名 {{item.seatsText}}</text>
+          </view>
+
+          <ui-button
+            wx:if="{{item.canPay}}"
+            slot="footer"
+            class="reg-card__pay"
+            type="primary"
+            size="small"
+            block="{{true}}"
+            loading="{{payingId === item.eventId}}"
+            data-id="{{item.eventId}}"
+            catchtap="onContinuePay"
+          >继续支付</ui-button>
+        </ui-card>
+      </view>
+    </ui-skeleton>
+  </block>
 </view>

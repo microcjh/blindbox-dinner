@@ -185,3 +185,12 @@
 - **前端门面收敛支付**：页面只调 `paymentService.createPrepay(eventId)` + `paymentService.pay(prepay)`（真实 prepay 调 `wx.requestPayment`，取消 resolve `{success:false,reason:'cancelled'}`），**不得裸调 `callFunction` 或 `wx.requestPayment`**；`createPrepay` 走默认 loading，`query` 用 `loading:false`。
 - **详情页付费流程**：`event-detail.onRegister` 顺序——`register` →（price>0）`createPrepay`+`pay`；支付取消保留 pending（toast「待支付」并 `loadDetail` 刷新，不翻 paid）；付费成功 toast「报名并支付成功」。免费场次跳过支付直接成功。
 - **退款前置**：`register.unregister` 对 `paid` 报名返回 `409`（提示走退款流程），退款由后续 refund 任务处理；支付链路与退款链路在 `payments/registrations` 状态机上解耦。
+
+## 21. 我的报名页（profile tab，见 miniprogram/pages/profile + services/event.deriveMyRow）
+
+- **profile 即「我的」tab，承载我的饭局列表**：原占位页（早期"紧急求助"模板）改造为 `eventService.myRegistrations()` 的消费页；导航栏标题由 `profile.json` 设为「我的」，列表为登录后私有数据。
+- **派生纯函数收敛在 services**：`services/event.deriveMyRow(reg)` 把 `register.my` 的一条 `{status,event}` 派生为展示行（state: joined/unpaid、stateText、priceText、timeText、seatsText、canPay）；**页面不内联派生逻辑**，便于单测（见 event.test.js 第8~11项），列表只 `filter(cancelled).map(deriveMyRow)`。
+- **付费态与继续支付**：`canPay = price>0 && status===\x27pending\x27` 时卡片底部显示「继续支付」按钮（`ui-button` 通栏 small），调 `paymentService.createPrepay + pay`（与详情页同源，devStub 直接成功）；支付成功后 `loadMine` 刷新（最终态由服务端 notify 异步翻转，列表短暂仍 unpaid 属预期）。
+- **未登录前置分流**：`onLoad/onShow` 经 `authService.isLoggedIn()` 判定；未登录显示 `ui-empty` 引导「去登录」（`navigateTo login`），不拉列表；`onShow` 用于从 login/realname 返回后刷新登录态与列表。
+- **骨架/空态/下拉刷新**：列表区用 `ui-skeleton`（loading 时骨架，false 渲染插槽）；空列表 `ui-empty` 引导「去逛逛」（`switchTab` 到 `pages/index` —— tabBar 页必须用 switchTab，不能用 navigateTo）；`enablePullDownRefresh` 开启，下拉 `loadMine` 后 `stopPullDownRefresh`。
+- **点击进详情**：卡片整卡 `bindtap goDetail` 带 `eventId` 进 `event-detail`；「继续支付」按钮用 `catchtap` 阻止冒泡（避免触发卡片跳转）。
