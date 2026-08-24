@@ -1,3 +1,54 @@
-<view class="placeholder">
-  <text>登录 · 建设中</text>
+<!-- pages/realname/realname.wxml — 实名认证页 -->
+<view class="realname">
+
+  <view class="hero">
+    <view class="hero__title">实名认证</view>
+    <view class="hero__sub">为保护约饭双方安全，首次报名前需完成人脸实名</view>
+  </view>
+
+  <!-- 已实名态 -->
+  <ui-card wx:if="{{verified}}" title="您已通过实名认证">
+    <view class="verified">
+      <view class="verified__tip">实名信息已加密存储，仅用于约饭匹配与安全保障。</view>
+      <ui-button type="primary" block bind:tap="goProfile">进入「我的」</ui-button>
+    </view>
+  </ui-card>
+
+  <!-- 未实名态:填写 + 核身 -->
+  <ui-card wx:else title="填写身份信息">
+    <view class="field">
+      <text class="field__label">真实姓名</text>
+      <input
+        class="field__input"
+        placeholder="请输入与身份证一致的姓名"
+        placeholder-class="field__ph"
+        value="{{realName}}"
+        bindinput="onNameInput"
+      />
+    </view>
+
+    <view class="field">
+      <text class="field__label">身份证号</text>
+      <input
+        class="field__input"
+        type="idcard"
+        placeholder="请输入 18 位身份证号"
+        placeholder-class="field__ph"
+        value="{{idCard}}"
+        maxlength="18"
+        bindinput="onIdInput"
+      />
+    </view>
+
+    <ui-button
+      type="primary"
+      block
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+      bind:tap="onSubmit"
+    >开始人脸核身并提交</ui-button>
+
+    <view class="privacy">提交即同意《隐私协议》，身份证号仅以哈希形式存储，不下发前端。</view>
+  </ui-card>
+
 </view>

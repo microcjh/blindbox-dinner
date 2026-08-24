@@ -61,6 +61,16 @@ if [ -f "$ROOT/miniprogram/components/package.json" ]; then
   )
 fi
 
+# 额外:前端业务服务层(含 package.json 时,纯 JS 无外部依赖,只跑单测)
+if [ -f "$ROOT/miniprogram/services/package.json" ]; then
+  found=1
+  echo "==> testing: miniprogram/services"
+  (
+    cd "$ROOT/miniprogram/services"
+    npm test
+  )
+fi
+
 if [ "$found" -eq 0 ]; then
   echo "no cloudfunctions with package.json; nothing to test."
 fi

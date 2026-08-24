@@ -8,7 +8,16 @@
 
 ## [Unreleased]
 
-## [0.1.7] - 2026-08-24
+## [0.1.8] - 2026-08-24
+
+### Added
+- 前端业务服务层 `miniprogram/services/`：`auth.js`（登录态门面，含 `me()` 刷新公开档案、`ensureSession()`）+ `verify.js`（封装人脸核身 `startFaceVerify` 与实名提交 `submit`），作为页面与云函数之间的 1:1 门面（task-013）
+- `verify.submit` 成功后自动刷新本地会话缓存（`utils/auth.setUserInfo`），实名页即时切换「已实名态」
+- `verify.startFaceVerify` 封装 `wx.startFacialRecognitionVerify`；DevTools / 未配核身能力时返回 dev 占位结果（标记 `__dev`，不触真实计费），与 `common/faceverify` 的 mock 策略对齐
+- `realname` 实名页接通：填写姓名+身份证 → 人脸核身 → 提交，成功 `reLaunch` 到「我的」；已实名进入「已通过」态
+- `login` 登录页接通：微信一键登录 → 按 `isVerified()` 分流（已实名进首页 / 未实名进实名页）；已登录且已实名自动跳过
+- `services` 单测（`verify.test.js` 13 项 + `auth.test.js` 6 项）：覆盖 核身 dev 占位 / 真机透传 / 提交成功写缓存 / 参数透传 / 业务错误不覆盖缓存 / `me()` 刷新
+- `scripts/test-all.sh` 纳入 `miniprogram/services` 扫描；`coding-style.md` 新增第 16 节「前端 services 业务层约定」
 
 ### Added
 - 实名认证云函数 `cloudfunctions/verify`：`action:'submit'` 校验 姓名 + 身份证 + 人脸核身结果，核身通过则回填 `users.verified/real_name/id_card_hash/face_token`，完成「强实名」第二重护城河（task-012）
