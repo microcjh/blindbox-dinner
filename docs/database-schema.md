@@ -22,8 +22,8 @@
 | **payments** | _id, reg_id, amount, status, transaction_id, created_at | string/decimal | transaction_id 唯一 |
 | **restaurants** | _id, name, address, cuisine, avg_price, rating, lng, lat, verified | string/number | verified 默认 false |
 | **reviews** | _id, event_id, from_uid, to_uid, score, tags[], comment, created_at | int/array | (from,to,event) 唯一 |
-| **blacklist** | _id, reporter, target, reason, status, created_at | string | — |
-| **sos** | _id, user_id, event_id, type, status, location, created_at, handled_at | string/json | — |
+| **blacklist** | _id, reporter, target, reason, detail, status(pending/resolved/banned), handler, note, created_at, handled_at | string | status=pending 待审，resolved 仅标记处理完毕，banned 标记封禁 |
+| **sos** | _id, user_id, event_id, type, desc, status(pending/handled), location, note, handler, created_at, handled_at | string/json | status=pending 待处置，handled 已处置 |
 | **memberships** | _id, user_id, type, start, end, status | string/datetime | — |
 
 ## 3. 索引定义
