@@ -1,0 +1,13 @@
+{
+  "name": "events",
+  "version": "1.0.0",
+  "description": "场次（约饭局）云函数（task-014）：list/detail/create，复用 common/db",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-08-24
+
+### Added
+- 场次（约饭局）云函数 `cloudfunctions/events`：`action:'list'`（按 `city/district/status` 筛选 + 分页，命中 `idx_city_district_time` 左前缀；**默认只出 `status=open`** 的可报名场次）、`action:'detail'`（取详情并关联餐厅基础信息，不联表按 `restaurant_id` 取）、`action:'create'`（发起场次，需登录 + 强实名，参数校验 `capacity≤6` / `time` 须未来 / `price>0`，落库 `registered=0` / `status=open`）（task-014）
+- `list`/`detail` 统一走 `common/db`（query / getById），字段裁剪只回传必要字段；关联餐厅只下发名称/菜系/地址/均价/评分/认证状态，绝不下发经纬度等内部字段
+- `create` 复用「强实名护城河」：仅 `verified=true` 用户可发起（未实名 402）；错误码 未登录 401 / 参数 400 / 未实名 402 / 不存在 404 / 异常 500
+- `events` 单测（mock wx-server-sdk + 复用真实 common/db、common/session）：覆盖 list 默认 open / 城市过滤 / status 过滤 / 分页、detail 关联餐厅 / 缺 id 400 / 不存在 404、create 成功 / 未登录 401 / 未实名 402 / 非法·过去时间 400 / 容量 >6 400 / 票价 0 400
+- `coding-style.md` 新增第 17 节「events 场次云函数约定」
+
 ## [0.1.8] - 2026-08-24
 
 ### Added
