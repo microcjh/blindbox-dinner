@@ -100,6 +100,23 @@ async function run() {
   ok(lastCall.name === 'register' && lastCall.data.action === 'my', 'myRegistrations 调 register 云函数 action=my');
   ok(mine.total === 1 && mine.list[0].event.id === 'e9', 'myRegistrations 解析 {list,total}');
 
+  // 8. deriveMyRow: 免费 + pending → 已报名,canPay=false
+  const free = event.deriveMyRow({ id: 'r1', status: 'pending', event: { id: 'e1', city: '北京', district: '朝阳', time: '2026-09-01T12:00:00.000Z', price: 0, capacity: 6, registered: 1 } });
+  ok(free.state === 'joined' && free.stateText === '已报名' && free.canPay === false, 'deriveMyRow 免费+pending → 已报名,不可支付');
+  ok(free.priceText === '¥0' && free.timeText.length > 0 && free.seatsText === '1/6', 'deriveMyRow 派生价格/时间/座位文案');
+
+  // 9. deriveMyRow: 付费 + pending → 待支付,canPay=true
+  const unpaid = event.deriveMyRow({ id: 'r2', status: 'pending', event: { id: 'e2', city: '北京', price: 49, capacity: 6, registered: 2 } });
+  ok(unpaid.state === 'unpaid' && unpaid.stateText === '待支付' && unpaid.canPay === true, 'deriveMyRow 付费+pending → 待支付,可继续支付');
+
+  // 10. deriveMyRow: 付费 + paid → 已支付,canPay=false
+  const paid = event.deriveMyRow({ id: 'r3', status: 'paid', event: { id: 'e3', city: '上海', price: 88, capacity: 4, registered: 3 } });
+  ok(paid.state === 'joined' && paid.stateText === '已支付' && paid.canPay === false, 'deriveMyRow 付费+paid → 已支付,不可再支付');
+
+  // 11. deriveMyRow: event 缺失 → 兜底空值,不抛错
+  const broken = event.deriveMyRow({ id: 'r4', status: 'pending' });
+  ok(broken.eventId === undefined && broken.state === 'joined' && broken.canPay === false, 'deriveMyRow event 缺失 → 安全兜底');
+
   console.log(`\nevent.test.js: ${passed} passed, ${failed} failed`);
   if (failed > 0) process.exit(1);
 }
