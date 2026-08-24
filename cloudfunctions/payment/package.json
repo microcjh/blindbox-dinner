@@ -1,0 +1,13 @@
+{
+  "name": "payment",
+  "version": "1.0.0",
+  "description": "支付云函数（task-017）：create 统一下单 / notify 支付结果通知 / query 查询支付态，复用 common/db + common/pay",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

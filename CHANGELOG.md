@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-08-24
+
+### Added
+- 支付云函数 `cloudfunctions/payment`（task-017）：`create` 统一下单（先报名后支付，仅对 pending 报名下单，金额来自 events.price×100 分）、`notify` 微信支付结果通知（落 payments(paid) + 翻转 registrations(paid)，transaction_id 幂等）、`query` 兜底查支付态；复用 common/db + common/pay（微信支付·云调用 cloudPay 薄封装）
+- `cloudfunctions/common/pay.js`：isPayConfigured/unifiedOrder/resultNotification 薄封装；真实路径读环境变量 `WXPAY_SUB_MCH_ID`，未配置走 dev 占位（不触真实计费，与 faceverify dev 占位同范式）
+- 前端支付业务门面 `miniprogram/services/payment.js`：createPrepay（调 payment.create 取 prepay）/ pay（devStub 直接 resolve，否则 wx.requestPayment，取消 resolve cancelled）/ queryStatus；页面只依赖门面，不裸调 callFunction 或 wx.requestPayment
+- 详情页 `pages/event-detail` 接通付费：onRegister 顺序为 register →(price>0) createPrepay+pay；支付取消保留 pending（toast 待支付并刷新），付费成功 toast「报名并支付成功」，免费场次跳过支付
+- 支付单测：`cloudfunctions/payment/test.js` 20 项（404/409/401/400/devStub/真实下单/notify 翻转/幂等/失败回传/query）；`miniprogram/services/payment.test.js` 12 项（createPrepay/pay 两种模式/queryStatus/防御）；services/package.json 纳入
+- `coding-style.md` 新增第 20 节「支付约定」；`database-schema.md` 已含 payments 集合与 transaction_id 唯一索引（task-008 预留）
+
 ## [0.1.11] - 2026-08-24
 
 ### Added
