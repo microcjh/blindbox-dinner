@@ -22,6 +22,7 @@ cloud.init({
 
 const { query, getById, insert, update } = require(path.join(__dirname, '..', 'common', 'db'));
 const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { sendMatchSuccess } = require(path.join(__dirname, '..', 'common', 'subscribe'));
 
 const REG_COLL = 'registrations';
 const MATCH_COLL = 'match_groups';
@@ -192,6 +193,11 @@ async function handleRun(event) {
   const updRes = await update(REG_COLL, { matched: true }, { _id: { $in: members.map((r) => r._id) } });
   if (updRes.code !== 0) return { code: 500, message: updRes.message };
 
+  // 8) 触发「凑桌成功」订阅消息（task-026）：反查每位 member 的 openid 并通知。
+  //    通知是增强能力，失败不影响凑桌主流程；未配置模板走 dev 占位（不触真实发送）。
+  const eventSummary = await getEventSummary(event_id);
+  await notifyTable(memberIds, eventSummary);
+
   return {
     code: 0,
     message: 'ok',
@@ -201,6 +207,36 @@ async function handleRun(event) {
       match_score: matchScore,
     },
   };
+}
+
+// 关联场次摘要（不联表，逐条 getById；与 withEventSummary 同源）
+async function getEventSummary(eventId) {
+  const ev = await getById('events', eventId);
+  if (ev.code === 0 && ev.data) {
+    return {
+      id: ev.data._id,
+      city: ev.data.city,
+      district: ev.data.district,
+      time: ev.data.time,
+      price: ev.data.price,
+    };
+  }
+  return { id: eventId };
+}
+
+// 通知同桌成员（task-026）：批量反查 openid 后逐个发订阅消息，失败静默不阻断
+async function notifyTable(memberIds, eventSummary) {
+  try {
+    const usersRes = await query('users', { where: { _id: { $in: memberIds } }, fields: ['_id', 'openid'] });
+    const users = (usersRes && usersRes.code === 0 && usersRes.data.list) || [];
+    await Promise.all(users.map((u) => sendMatchSuccess({
+      openid: u.openid,
+      event: eventSummary,
+      members: memberIds,
+    })));
+  } catch (e) {
+    // 通知失败仅记录，不影响凑桌结果
+  }
 }
 
 // 我的桌：列出当前用户参与的所有 match_groups + 关联场次摘要

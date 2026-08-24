@@ -4,7 +4,7 @@
 // 内存 store 按集合名隔离；通过 __reset / __store / __callLog 暴露状态供单测断言。
 const store = {}; // { collection: [record,...] }
 const seq = { n: 0 };
-const callLog = { add: [], get: [], count: [], update: [], remove: [] };
+const callLog = { add: [], get: [], count: [], update: [], remove: [], subscribeSend: [] };
 
 function genId() {
   seq.n += 1;
@@ -160,6 +160,14 @@ const cloud = {
       },
     };
   },
+  openapi: {
+    subscribeMessage: {
+      async send(opts) {
+        callLog.subscribeSend.push(opts);
+        return { errCode: 0, errMsg: 'ok' };
+      },
+    },
+  },
 };
 
 cloud.__reset = () => {
@@ -169,6 +177,7 @@ cloud.__reset = () => {
   callLog.count.length = 0;
   callLog.update.length = 0;
   callLog.remove.length = 0;
+  callLog.subscribeSend.length = 0;
   seq.n = 0;
 };
 

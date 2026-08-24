@@ -29,6 +29,7 @@
 - `coding-style.md` 新增第 26 节「问卷 + 同频匹配约定」；schema 中 `questionnaires` 集合（task-008 预留）正式启用写入链路。
 - **我的桌展示（task-025）**：`pages/profile` 已登录态并行接入 `matchService.myMatches()`，新增「我的桌」区块展示凑桌成功的同频饭局（场次城市·区 / 时间 / 价格 / 同桌人数 / **同频分 match_score**），与「我的饭局」双区块并列；卡片点击进 `event-detail`。`coding-style.md` 新增 §27。
 - **修复：match_score 不返回（task-024 遗留）**：`cloudfunctions/match` 的 `MATCH_FIELDS` 漏写 `match_score`，导致 `myMatches` 查不到同频分；已补齐并补单测断言（myMatches 返回含 match_score），match 单测合计 33 项。
+- **订阅消息通知（task-026）**：新增 `cloudfunctions/common/subscribe.js` 薄封装 `sendMatchSuccess`（消费 env `SUBSCRIBE_TMPL_MATCH`，未配走 dev 占位不触真实发送）；`cloudfunctions/match` 落桌成功后 `notifyTable` 反查 members 的 `users.openid` 逐个下发「凑桌成功」通知（失败静默不阻断主流程）；`services/match.js` 增 `requestMatchSubscribe`（封装 `wx.requestSubscribeMessage`，常量模板 ID），`pages/event-detail` 在报名/支付成功后申请授权（最佳 opt-in 时机）。coding-style §28 + match 单测合计 35 项（含订阅触发断言）。
 
 ## [0.1.14] - 2026-08-24
 
