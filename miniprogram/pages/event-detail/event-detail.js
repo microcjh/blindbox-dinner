@@ -164,7 +164,11 @@ Page({
         wx.showToast({ title: '报名成功', icon: 'success' });
       }
 
-      // 3) 刷新详情（registered+1 / paid 态由支付通知异步翻转，此处先 local 呈现）
+      // 3) 申请「凑桌成功」订阅消息授权（task-026：报名/支付成功是最佳 opt-in 时机）
+      //    用户同意后，服务端凑桌成功时才能下发通知；失败静默不影响主流程。
+      matchService.requestMatchSubscribe().catch(() => {});
+
+      // 4) 刷新详情（registered+1 / paid 态由支付通知异步翻转，此处先 local 呈现）
       await this.loadDetail();
     } catch (e) {
       // 409/其他已由 request 层提示

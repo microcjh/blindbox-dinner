@@ -64,10 +64,15 @@ const token = signToken({ openid: 'mock-openid', uid });
 async function run() {
   // ===== run: 凑桌 =====
   cloud.__reset();
+  // task-026: 配置订阅消息模板，验证落桌后触发通知
+  process.env.SUBSCRIBE_TMPL_MATCH = 'tmpl_match_success_test';
   makeEvent('e_match_1', { capacity: 6, registered: 6, status: 'full' });
   makeUser(uid, { verified: true });
   // 4 个已支付且未 matched 的报名 → 刚好开桌
-  ['m1', 'm2', 'm3', 'm4'].forEach((s) => makeReg(`u_${s}`, 'e_match_1', { suffix: s }));
+  ['m1', 'm2', 'm3', 'm4'].forEach((s) => {
+    makeUser(`u_${s}`, { verified: true }); // 为每位 member 建 user（含 openid，供订阅消息反查）
+    makeReg(`u_${s}`, 'e_match_1', { suffix: s });
+  });
 
   // 1) 凑桌成功 → 落 match_groups，4 人成桌，报名标记 matched
   let r = await main({ action: 'run', token, event_id: 'e_match_1' });
@@ -78,6 +83,9 @@ async function run() {
   const matchedRegs = cloud.__store.registrations.filter((x) => x.event_id === 'e_match_1' && x.matched);
   ok(matchedRegs.length === 4, '4 条报名被标记 matched=true');
   const mgId = cloud.__store.match_groups[0]._id;
+  // task-026: 落桌成功触发「凑桌成功」订阅消息给每位 member（含反查 openid）
+  ok(cloud.__callLog.subscribeSend.length === 4, '落桌成功向 4 位 member 各发一条订阅消息');
+  ok(cloud.__callLog.subscribeSend.every((s) => s.touser && s.templateId === 'tmpl_match_success_test'), '订阅消息含接收 openid + 模板 ID');
 
   // 2) 重复凑桌 → 已 matched 的报名被排除，余 0 人 → 409 人数不足
   r = await main({ action: 'run', token, event_id: 'e_match_1' });

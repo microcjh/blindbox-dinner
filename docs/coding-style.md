@@ -251,3 +251,9 @@
 - **match_score 透出硬约束**：`cloudfunctions/match` 的 `MATCH_FIELDS` **必须含 `match_score`**（task-024 初版漏写导致 `myMatches` 查不到同频分，已修复并补单测断言）。落库与 `toMatchView` 均透传 `match_score`，任何"我的桌"展示依赖该字段时不得再从 `MATCH_FIELDS` 裁剪掉。
 - **派生纯函数在前端做**：`profile.js` 的 `loadMyTables` 把 `myMatches` 每条 `{id,event,members,match_score}` 派生为展示行（`city/district/timeText/priceText/memberCount/matchScore/isMine`），不内联复杂逻辑；`timeText/priceText` 复用 `utils/format`（`formatEventTime`/`formatPrice`）。
 - **展示维度**：卡片显示场次（城市·区/时间/价格）+ 同桌人数 + **同频分 match_score**（让用户感知"盲盒同频"依据）；点击进 `event-detail`。同频分仅作展示，不参与权限/状态判断。
+
+## §28 订阅消息通知（task-026）
+- **封装层 `cloudfunctions/common/subscribe.js`**：薄封装 `sendMatchSuccess({openid, event, members})`，消费环境变量 `SUBSCRIBE_TMPL_MATCH`（凑桌成功模板 ID）。**未配置走 dev 占位**（返回 `{sent:false, stub:true}`，不触真实发送，与 pay/faceverify dev 占位同范式）；配置后调 `cloud.openapi.subscribeMessage.send`。真实模板接入为独立任务（后台申请 + 配 env）。
+- **触发点**：`cloudfunctions/match` 落桌成功后（标记 matched 之后）调 `notifyTable` —— 批量反查 members 的 `users.openid`（按 `_id $in` 查）并逐个发「凑桌成功」通知。**通知是增强能力：失败静默 catch，绝不阻断凑桌主流程**（错误码语义见 §7）。
+- **前端 opt-in 时机**：`pages/event-detail` 在**报名/支付成功后**调 `matchService.requestMatchSubscribe()`（task-019 门面扩展，封装 `wx.requestSubscribeMessage`，模板 ID 用常量 `MATCH_SUBSCRIBE_TMPL_ID`）。这是微信订阅消息转化最高的时机（用户刚完成关键动作）；用户拒绝 → 返回 `{accepted:false}` 静默不阻断。注意：前端申请的 tmplId 须与后台申请的模板一致，否则 `requestSubscribeMessage` 报错（门面已 fail 兜底）。
+- **字段映射**：订阅消息 data 用 `thing1`（饭局名）/ `time2`（时间）/ `number3`（同桌人数），跳转 `pages/profile/profile`（我的桌）。
