@@ -13,7 +13,7 @@
 
 | 集合 | 字段 | 类型 | 约束 |
 |---|---|---|---|
-| **users** | _id, openid, phone, real_name, id_card_hash, face_token, gender, age, mbti, education, occupation, tags[], status, created_at | string/int/array | openid 唯一；id_card_hash 实名后必填 |
+| **users** | _id, openid, phone, real_name, id_card_hash, face_token, gender, age, mbti, education, occupation, tags[], verified, status, created_at | string/int/array/bool | openid 唯一；id_card_hash 实名后必填；verified 默认 false（实名后由 verify 置 true） |
 | **realname_verify** | _id, user_id, id_card_hash, face_score, verify_status, verify_time | string/float | user_id 唯一 |
 | **questionnaires** | _id, user_id, diet_pref, taboo[], budget, topics[], personality, expect[], created_at | json/array | user_id 唯一 |
 | **events** | _id, city, district, restaurant_id, time, price, capacity, registered, status | string/datetime/int | capacity≤6 |

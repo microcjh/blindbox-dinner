@@ -123,3 +123,11 @@
 - 导入**幂等**：以 `name + address` 作为去重键（先 `query` 是否已存在，已存在则跳过），可重复运行不重复插入；返回统一结构 `{ code, message, data: { inserted, skipped, total } }`。
 - 数据字段严格对齐集合 Schema（restaurants 为 `name/address/cuisine/avg_price/rating/lng/lat/verified`），坐标用真实经纬度，`verified` 默认 false；新增/修改种子需同步 `docs/database-schema.md`。
 - 种子云函数**仅在首次部署或数据更新时手动触发一次**，不进日常业务流；`data.js` 顶部 `validate()` 校验条数与必填字段，单测覆盖幂等 / 去重 / 条数。
+
+## 14. 登录态与令牌约定（见 cloudfunctions/auth + cloudfunctions/common/session）
+
+- **身份来源权威是 `cloud.getWXContext().OPENID`**：云开发下 `wx.cloud.callFunction` 自动注入调用者 openid，**无需前端 code2Session 换 session_key**。`auth` 云函数 `action:'login'` 以 OPENID 为主键 find-or-create `users`；前端 `wx.login()` 的 `code` 仅兼容保留，不强制。
+- **令牌走 `common/session.js`**：`signToken({openid, uid})` / `verifyToken(token)` 为 HMAC-SHA256 **无状态自描述令牌**（载荷含 `openid/uid/iat/exp`，TTL 7 天）。下游云函数（register/events/payment…）用 `verifyToken(event.token)` 取 `uid` 解析身份，或直接用 `wxContext.OPENID`（云开发恒可靠），二选一保持一致。
+- **密钥**：生产必须配置云函数环境变量 `AUTH_TOKEN_SECRET`；未配置回退开发期常量，**仅本地/测试可用，严禁生产依赖回退值**。
+- **公开档案脱敏**：`auth` 的 `toPublicProfile` 必须剔除 `id_card_hash / openid / face_token`，并将 `_id` 重命名为 `id` 下发（见 §7/§8）；`user.verified` 默认 false，实名完成后由 task-012 `verify` 云函数写库并回填，`utils/auth.js` 的 `isVerified()` 据此判定。
+- **用户集合新增 `verified` 字段**（boolean，默认 false），已同步 `docs/database-schema.md`；`users.openid` 唯一索引（init-db 已建）即「一人一号」约束。

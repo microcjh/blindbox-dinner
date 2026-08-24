@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-22
+
+### Added
+- 登录与身份云函数 `cloudfunctions/auth`：`action:'login'`（按 `wxContext.OPENID` find-or-create `users` 集合，签发令牌，返回 `{token,user,isNew}`）、`action:'me'`（校验令牌返回公开档案），闭合登录链路（前端 `utils/auth.js` 已就绪，待后端首落地）
+- 共享令牌模块 `cloudfunctions/common/session.js`：`signToken/verifyToken`（HMAC-SHA256 无状态自描述令牌，TTL 7 天，密钥取自 `AUTH_TOKEN_SECRET` 环境变量，未配回退开发常量）；供 auth 及下游云函数（register/events/payment…）复用，离线可验身份
+- 公开档案脱敏：`toPublicProfile` 剔除 `id_card_hash/openid/face_token`、`_id→id`，满足隐私合规（`user.verified` 默认 false，实名后由 task-012 回填）
+- `auth` 单测（mock wx-server-sdk + 复用真实 common/db、common/session）：覆盖首次建用户 / 二次复用 / OPENID 缺失 401 / me 合法·非法·过期·无记录 / 公开档案脱敏 / 令牌签名校验往返
+- `coding-style.md` 新增第 14 节「登录态与令牌约定」；`docs/database-schema.md` 的 `users` 集合增补 `verified` 字段（默认 false，与 §8 登录态约定一致）
+
 ## [0.1.5] - 2026-08-22
 
 ### Added
