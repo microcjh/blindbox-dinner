@@ -1,3 +1,11 @@
 {
-  "navigationBarTitleText": ""
+  "navigationBarTitleText": "盲盒约饭",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "ui-card": "../../components/ui-card/ui-card",
+    "ui-tag": "../../components/ui-tag/ui-tag",
+    "skeleton": "../../components/skeleton/skeleton",
+    "empty": "../../components/empty/empty"
+  }
 }

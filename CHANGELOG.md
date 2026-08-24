@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-08-24
+
+### Added
+- 前端业务服务门面 `miniprogram/services/event.js`：1:1 封装 `events`/`register` 云函数（task-014/015）——`listEvents`（公开浏览，默认 city=北京、status 走云函数默认 open）、`getEvent`（详情含关联餐厅）、`register`/`unregister`/`myRegistrations`；页面只依赖此门面，不裸调 `callFunction`（task-016）
+- 纯展示格式化工具 `miniprogram/utils/format.js`：`formatEventTime`（ISO→`MM-DD HH:mm`）、`formatPrice`（`¥xx`），无 wx 依赖便于单测；列表与详情页共用
+- 「场次」tab（`pages/index`）由占位改造为场次列表：区筛选 chips + 卡片列表（城市/时间/价格/座位进度）+ 下拉刷新 + 触底加载更多 + `skeleton`/`empty` 占位；点击进详情（task-016）
+- 场次详情页 `pages/event-detail`（已注册路由）：展示城市/时间/价格/座位进度与关联餐厅（字段由云函数裁剪，前端只消费）+ 吸底报名条；`onRegister` 前置分流（未登录→login / 未实名→realname / 已报名·已满→toast 拦截），报名成功 `loadDetail` 刷新座位、按 `myRegistrations` 推断「已报名」态切换「取消报名」
+- `event.js` 离线单测 `event.test.js` 18 项（mock wx）：覆盖 list/detail/register/unregister/my 的云函数名+action 分发、参数透传（含默认 city、event_id、token 自动注入）、成功解析、id 缺失边界；`services/package.json` test 脚本纳入 `event.test.js`
+- `coding-style.md` 新增第 19 节「前端场次浏览/报名页面约定」
+
 ## [0.1.10] - 2026-08-24
 
 ### Added
@@ -108,7 +118,8 @@
 - 全局品牌设计 token（珊瑚橙 `#FF6B4A` / 神秘紫 `#7C5CFC` / 信任绿 `#16B981` + 4px 间距 / 8·12·16 圆角）
 - CI 工作流（`ci.yml` 云函数测试 + 文档检查）、PR 模板、CODEOWNERS、CONTRIBUTING
 
-[Unreleased]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.10...HEAD
+[0.1.11]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.10...v0.1.11
 [0.1.2]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/microcjh/blindbox-dinner/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/microcjh/blindbox-dinner/releases/tag/v0.1.0

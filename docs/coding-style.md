@@ -167,3 +167,12 @@
 - **`my` 关联场次摘要不联表**：`my` 取当前用户 `registrations`（`orderBy created_at desc`）后，逐条 `getById('events')` 附 `_id/city/district/time/price/capacity/registered/status/restaurant_id` 摘要（单用户报名数受 `capacity≤6` 约束，N 次小查询可接受）；不下发明文身份证等敏感信息（registrations 本无敏感字段）。
 - **错误码语义**：未登录 `401`、参数 `400`、未实名 `402`、场次不存在 `404`、冲突 `409`（已报名/已满/已支付）、异常 `500`；与 §7 统一错误码表一致。
 - **数据访问统一走 `common/db`**：`register` 用 `query`（预检）/ `insert` / `update`（按 `_id` 增减 `registered`、翻 `status`）；`unregister` 用 `query`（查现存）/ `remove`（按 `where` 删除）/ `update`；`my` 用 `query` + `getById`。本文件不裸拼查询链。
+
+## 19. 前端场次浏览/报名页面约定（见 miniprogram/pages/index + pages/event-detail + services/event）
+
+- **列表进「场次」tab（index）**：tabBar 首个 tab 即场次列表，已在 `app.json` 注册；index 页负责 `events.list` 的公开浏览（区筛选 chips + 触底加载 + 下拉刷新），**列表为公开数据，不强制登录**，浏览态用 `skeleton` 骨架、`empty` 空态占位，控制首屏体积与流畅度。
+- **详情独立页**：`pages/event-detail`（`app.json` 已注册路由）负责单场展示 + 报名；`onLoad(id)` 调 `eventService.getEvent`，展示城市/时间/价格/座位进度与关联餐厅（餐厅字段由云函数裁剪，前端只消费，不依赖坐标）。
+- **报名态由 services 门面收敛**：`services/event.js` 是 events/register 云函数的 1:1 门面（见 §16），页面只调 `eventService.listEvents/getEvent/register/unregister/myRegistrations`，**不得裸调 `callFunction`**；`list/detail/my` 为浏览类用 `loading:false`（不盖全局 loading），`register/unregister` 为写操作走默认 loading。
+- **报名前置分流在页面内做**：详情页 `onRegister` 顺序判断——未登录 `→ navigateTo login`、未实名 `→ navigateTo realname`、已报名/已满 `→ toast` 拦截；该分流依赖 `services/auth.isLoggedIn()/isVerified()`（见 §14/§16），不把登录态判断散落到 services/event 内部。
+- **「我是否已报名」用 `myRegistrations` 推断**：详情页 `onShow`/`loadDetail` 后调 `eventService.myRegistrations()`，按 `event.id` 匹配当前场次，得出 `registered` 决定吸底按钮显示「立即报名」还是「取消报名」；推断失败（网络/未登录）不阻断浏览，保持 `registered=false`。
+- **展示格式化走纯函数**：`utils/format.js` 的 `formatEventTime/formatPrice` 为无 wx 依赖纯函数，列表与详情共用，避免 WXML 内联运算、便于单测。

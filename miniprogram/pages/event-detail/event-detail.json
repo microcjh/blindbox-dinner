@@ -1,3 +1,11 @@
 {
-  "navigationBarTitleText": "实名"
+  "navigationBarTitleText": "场次详情",
+  "usingComponents": {
+    "ui-card": "../../components/ui-card/ui-card",
+    "ui-tag": "../../components/ui-tag/ui-tag",
+    "ui-button": "../../components/ui-button/ui-button",
+    "bottom-bar": "../../components/bottom-bar/bottom-bar",
+    "skeleton": "../../components/skeleton/skeleton",
+    "empty": "../../components/empty/empty"
+  }
 }
