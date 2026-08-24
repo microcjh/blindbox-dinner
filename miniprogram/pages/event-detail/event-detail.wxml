@@ -1,6 +1,14 @@
 <!-- pages/event-detail/event-detail.wxml — 场次详情 + 报名 -->
 <view class="detail">
 
+  <!-- 一键 SOS 浮标（饭局中安全兜底，任何已登录用户可用） -->
+  <view
+    wx:if="{{!loading && !notFound}}"
+    class="sos-fab"
+    hover-class="sos-fab--hover"
+    bind:tap="onSos"
+  >SOS</view>
+
   <skeleton wx:if="{{loading}}" loading="{{true}}" rows="{{4}}" />
 
   <block wx:elif="{{!notFound}}">

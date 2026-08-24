@@ -17,6 +17,9 @@
 - **退款云函数 `cloudfunctions/refund`（task-021）**：`apply` 须登录 + 仅本人 `registrations.status==='paid'` 可退（`pending`/已退/其他态 409）；查 `payments` 取 `transaction_id`（无记录/无 transaction_id → 409）；落 `refunds` + 翻转 `registrations(refunded)`；幂等（已有退款单返回 `{duplicated:true}`）；未配置商户号走 devStub 占位（不触真实计费）。`query` 按 registration_id 查退款单（浏览类）。错误码 401/400/404/409/503；复用 common/db + common/session + common/pay；12 项单测。
 - **前端业务门面** `miniprogram/services/refund.js`（applyRefund/queryRefund），loading 语义对齐；5 项单测，纳入 services/package.json 闸门。
 - **profile 接通退款入口**：`deriveMyRow` 新增 `canRefund = price>0 && status==='paid'`（与 canPay 互斥）；`pages/profile` 对已支付卡片显示「申请退款」按钮（`onRefund` 二次确认 → `applyRefund` → 刷新）；`coding-style.md` 新增第 20.1 节退款约定。
+- **一键 SOS 云函数 `cloudfunctions/sos`（task-022）**：`create` 须登录 + 关联 event_id 且场次存在（缺 event_id/type 非法 400、场次不存在 404）+ 落 `sos(status=pending)`（type 白名单 unsafe/lost/medical/other）；`query` 按 id 浏览、`mine` 我的求助列表（created_at 降序）。错误码 401/400/404/500；复用 common/db + common/session；20 项单测。
+- **前端业务门面** `miniprogram/services/sos.js`（createSos/querySos/mySos），loading 语义对齐 §24；3 项单测，纳入 services/package.json 闸门。
+- **详情页接通 SOS 浮标**：`pages/event-detail` 右上角红色圆形「SOS」浮标（`onSos` 前置分流未登录→login / 二次确认防误触 / `sosSending` 防重复）；`coding-style.md` 新增第 24 节 SOS 约定；schema 中 sos 集合与索引（task-008 已预留）正式启用。
 
 ## [0.1.14] - 2026-08-24
 
