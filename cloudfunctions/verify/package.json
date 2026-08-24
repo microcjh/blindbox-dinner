@@ -1,0 +1,13 @@
+{
+  "name": "verify",
+  "version": "1.0.0",
+  "description": "实名认证云函数（task-012）：人脸核身 + 身份证哈希回填 users",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
