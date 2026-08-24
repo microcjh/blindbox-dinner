@@ -161,3 +161,26 @@
 .star--on {
   color: #FFB400;
 }
+
+/* 一键 SOS 浮标 */
+.sos-fab {
+  position: fixed;
+  top: calc(24rpx + env(safe-area-inset-top));
+  right: 24rpx;
+  z-index: 50;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #e54d42;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 20rpx rgba(229, 77, 66, 0.4);
+}
+.sos-fab--hover {
+  opacity: 0.85;
+  transform: scale(0.94);
+}

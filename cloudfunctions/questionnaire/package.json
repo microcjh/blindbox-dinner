@@ -1,0 +1,10 @@
+{
+  "name": "questionnaire",
+  "version": "1.0.0",
+  "description": "盲盒约饭问卷云函数（task-024）：submit/get，幂等 upsert + 公开维度裁剪",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT"
+}

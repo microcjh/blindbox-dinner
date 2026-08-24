@@ -1,3 +1,74 @@
-<view class="placeholder">
-  <text>场次详情 · 建设中</text>
+<view class="page">
+  <view class="header">
+    <text class="title">约饭问卷</text>
+    <text class="subtitle">填一份口味 / 话题 / 预算，系统把同频的陌生人凑成一桌</text>
+  </view>
+
+  <view class="card">
+    <view class="field">
+      <text class="label">口味偏好 *</text>
+      <input class="input" placeholder="如：川菜微辣、不吃太甜" value="{{dietPref}}" bindinput="onDietInput" maxlength="30" />
+    </view>
+
+    <view class="field">
+      <text class="label">性格标签 *</text>
+      <input class="input" placeholder="如：e人话痨、慢热但熟了话多" value="{{personality}}" bindinput="onPersonalityInput" maxlength="30" />
+    </view>
+
+    <view class="field">
+      <text class="label">人均预算（元）*</text>
+      <input class="input" type="number" placeholder="如：80" value="{{budget}}" bindinput="onBudgetInput" />
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="label">忌口（可多选）</text>
+    <view class="chips">
+      <view
+        wx:for="{{tabooPreset}}"
+        wx:key="*this"
+        class="chip {{taboo.indexOf(item) > -1 ? 'chip-on' : ''}}"
+        data-field="taboo"
+        data-value="{{item}}"
+        bindtap="toggleTag"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="label">感兴趣的话题（可多选）</text>
+    <view class="chips">
+      <view
+        wx:for="{{topicsPreset}}"
+        wx:key="*this"
+        class="chip {{topics.indexOf(item) > -1 ? 'chip-on' : ''}}"
+        data-field="topics"
+        data-value="{{item}}"
+        bindtap="toggleTag"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="label">约饭期待（可多选）</text>
+    <view class="chips">
+      <view
+        wx:for="{{expectPreset}}"
+        wx:key="*this"
+        class="chip {{expect.indexOf(item) > -1 ? 'chip-on' : ''}}"
+        data-field="expect"
+        data-value="{{item}}"
+        bindtap="toggleTag"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button
+      class="submit-btn"
+      bindtap="onSubmit"
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+    >{{loaded && dietPref ? '保存并更新' : '提交问卷'}}</button>
+  </view>
 </view>

@@ -25,10 +25,89 @@ const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'))
 
 const REG_COLL = 'registrations';
 const MATCH_COLL = 'match_groups';
+const Q_COLL = 'questionnaires';
 const MIN_MEMBERS = 4; // 开桌下限（schema: members 4–6）
+const MAX_MEMBERS = 6; // 开桌上限（schema: members 4–6）
 
 // 列表只回传必要字段（降传输体积；match_groups 无敏感字段）
 const MATCH_FIELDS = ['_id', 'event_id', 'members', 'matched_at'];
+
+// ---- 问卷驱动匹配（task-024 下）----
+// 同频打分：budget 接近度 + taboo 冲突惩罚 + topics/personality 重合度。
+// 仅消费 questionnaires 的「公开维度」（diet_pref/taboo/budget/topics/personality），不触敏感字段。
+// 返回 0–100 分；无问卷任一方时返回 null（调用方回退先到先得）。
+
+function jaccard(a = [], b = []) {
+  const sa = new Set(a.map((x) => String(x).trim()).filter(Boolean));
+  const sb = new Set(b.map((x) => String(x).trim()).filter(Boolean));
+  if (sa.size === 0 && sb.size === 0) return 0;
+  let inter = 0;
+  sa.forEach((x) => { if (sb.has(x)) inter += 1; });
+  const union = sa.size + sb.size - inter;
+  return union === 0 ? 0 : inter / union;
+}
+
+function scorePair(qa, qb) {
+  if (!qa || !qb) return null;
+
+  // 1) budget 接近度（差 0 → 1.0，差 ≥200 → 0）
+  const budgetGap = Math.abs((qa.budget || 0) - (qb.budget || 0));
+  const budgetScore = Math.max(0, 1 - budgetGap / 200);
+
+  // 2) taboo 冲突惩罚（任一方忌口命中另一方话题/口味 → 强降分）
+  const tabooA = new Set((qa.taboo || []).map((x) => String(x).trim()));
+  const tabooB = new Set((qb.taboo || []).map((x) => String(x).trim()));
+  const conflict = [...tabooA].some((t) => tabooB.has(t)) || [...tabooB].some((t) => tabooA.has(t));
+  const tabooPenalty = conflict ? 0.4 : 0; // 冲突直接扣 40%
+
+  // 3) topics 重合度（0–1）
+  const topicScore = jaccard(qa.topics, qb.topics);
+
+  // 4) personality 是否同频（精确匹配 +1 档，否则按 diet_pref 同类兜底）
+  const personalityScore = qa.personality === qb.personality ? 1 : 0.5;
+
+  // 加权：budget 30% + topics 35% + personality 20% + (1 - tabooPenalty 折算) 15%
+  let raw = budgetScore * 0.3 + topicScore * 0.35 + personalityScore * 0.2 + (1 - tabooPenalty) * 0.15;
+  raw *= (1 - tabooPenalty); // 冲突再整体惩罚
+  return Math.round(Math.max(0, Math.min(1, raw)) * 100);
+}
+
+// 取 bestN 个与 anchor 同频最高的候选（含 anchor 自身），不足回退先到先得
+function pickCohort(candidates, questionnaires, bestN) {
+  const anchor = candidates[0];
+  const anchorQ = questionnaires[anchor.user_id];
+
+  // 无任何问卷 → 纯先到先得
+  const hasAnyQ = Object.keys(questionnaires).length > 0;
+  if (!hasAnyQ || !anchorQ) {
+    return candidates.slice(0, bestN);
+  }
+
+  const scored = candidates.map((c) => {
+    if (c.user_id === anchor.user_id) return { c, s: 100 };
+    const s = scorePair(anchorQ, questionnaires[c.user_id]);
+    return { c, s: s === null ? -1 : s }; // 无问卷候选排到最后（仍可被凑入，保开桌）
+  });
+
+  // 同频优先：分高在前；无问卷(-1)沉底，但仍在候选池保开桌人数
+  scored.sort((a, b) => b.s - a.s);
+  return scored.slice(0, bestN).map((x) => x.c);
+}
+
+// 批量读候选人问卷（按 user_id 取公开维度；不存在跳过）
+async function loadQuestionnaires(userIds) {
+  if (!userIds.length) return {};
+  const res = await query(Q_COLL, {
+    where: { user_id: { $in: userIds } },
+    pageSize: 100,
+    fields: ['user_id', 'diet_pref', 'taboo', 'budget', 'topics', 'personality'],
+  });
+  const map = {};
+  if (res.code === 0) {
+    (res.data.list || []).forEach((q) => { map[q.user_id] = q; });
+  }
+  return map;
+}
 
 function toMatchView(m) {
   if (!m) return null;
@@ -63,7 +142,7 @@ async function handleRun(event) {
   if (ev.code !== 0) return { code: 500, message: ev.message };
   if (!ev.data) return { code: 404, message: '场次不存在' };
 
-  // 4) 取该场次「已支付且未 matched」的报名（按 created_at 升序，先报先入桌）
+  // 4) 取该场次「已支付且未 matched」的报名（按 created_at 升序，先报先入桌为候选池）
   const regs = await query(REG_COLL, {
     where: { event_id, status: 'paid', matched: { $ne: true } },
     orderBy: ['created_at', 'asc'],
@@ -75,18 +154,35 @@ async function handleRun(event) {
     return { code: 409, message: `已支付人数不足，需满 ${MIN_MEMBERS} 人开桌（当前 ${candidates.length} 人）` };
   }
 
-  // 5) 取 MIN_MEMBERS 人成一桌（文档库 $ne 兼容：再防御一次已 matched）
-  const members = candidates.filter((r) => !r.matched).slice(0, MIN_MEMBERS);
+  // 5) 问卷驱动同频优先选人（task-024 下）：读候选人问卷 → 以首候选为锚挑同频最高者凑桌；
+  //    无问卷时回退纯先到先得（仍保开桌下限）。优先凑满 MIN_MEMBERS(4) 人同频桌，
+  //    若高分候选不足 4 则从池里补足（无问卷沉底优先），上限 MAX_MEMBERS。
+  const questionnaires = await loadQuestionnaires(candidates.map((r) => r.user_id));
+  const cohort = pickCohort(candidates, questionnaires, MIN_MEMBERS);
+  // 文档库 $ne 兼容：再防御一次已 matched
+  const members = cohort.filter((r) => !r.matched);
   if (members.length < MIN_MEMBERS) {
     return { code: 409, message: `可凑桌人数不足，需满 ${MIN_MEMBERS} 人开桌（当前 ${members.length} 人）` };
   }
   const memberIds = members.map((r) => r.user_id);
 
-  // 6) 落 match_groups
+  // 6) 算本桌整体同频分（两两均值，仅对有问卷的对算；无问卷不计入分母）
+  let scoreSum = 0;
+  let scoreCnt = 0;
+  for (let i = 0; i < members.length; i += 1) {
+    for (let j = i + 1; j < members.length; j += 1) {
+      const s = scorePair(questionnaires[members[i].user_id], questionnaires[members[j].user_id]);
+      if (s !== null) { scoreSum += s; scoreCnt += 1; }
+    }
+  }
+  const matchScore = scoreCnt > 0 ? Math.round(scoreSum / scoreCnt) : null;
+
+  // 7) 落 match_groups（含 match_score，供前端「同频度」展示 / 后续调优）
   const matchedAt = new Date().toISOString();
   const ins = await insert(MATCH_COLL, {
     event_id,
     members: memberIds,
+    match_score: matchScore,
     matched_at: matchedAt,
     created_at: matchedAt,
   });
@@ -100,8 +196,9 @@ async function handleRun(event) {
     code: 0,
     message: 'ok',
     data: {
-      match: toMatchView({ _id: ins.data._id, event_id, members: memberIds, matched_at: matchedAt }),
+      match: toMatchView({ _id: ins.data._id, event_id, members: memberIds, match_score: matchScore, matched_at: matchedAt }),
       member_count: memberIds.length,
+      match_score: matchScore,
     },
   };
 }
