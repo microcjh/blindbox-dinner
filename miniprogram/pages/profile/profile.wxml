@@ -85,5 +85,49 @@
         </ui-card>
       </view>
     </ui-skeleton>
+
+    <!-- 我的桌：凑桌成功的同频饭局（task-025） -->
+    <view class="tables">
+      <view class="tables__head">
+        <text class="tables__title">我的桌</text>
+        <text class="tables__hint">系统为你凑的同频饭局</text>
+      </view>
+
+      <ui-skeleton loading="{{tablesLoading}}" title="{{false}}" row-array="{{[100, 40]}}">
+        <view wx:if="{{tables.length === 0 && !tablesLoading}}" class="tables__empty">
+          <text class="tables__empty-text">还没有凑桌成功的饭局</text>
+          <text class="tables__empty-sub">报名并支付后，满 4 人即自动成桌</text>
+        </view>
+
+        <view wx:else class="tables__list">
+          <ui-card
+            wx:for="{{tables}}"
+            wx:key="id"
+            class="table-card"
+            padding="24rpx"
+            data-id="{{item.eventId}}"
+            bind:tap="goDetail"
+          >
+            <view class="table-card__top">
+              <view class="reg-card__loc">
+                <text class="reg-card__city">{{item.city}}</text>
+                <text class="reg-card__district" wx:if="{{item.district}}">· {{item.district}}</text>
+              </view>
+              <view class="table-card__score" wx:if="{{item.matchScore !== null}}">
+                <text class="table-card__score-num">{{item.matchScore}}</text>
+                <text class="table-card__score-label">同频分</text>
+              </view>
+            </view>
+
+            <view class="reg-card__time">{{item.timeText}}</view>
+
+            <view class="reg-card__foot">
+              <text class="reg-card__price">{{item.priceText}}</text>
+              <text class="reg-card__seats">{{item.memberCount}} 人同桌</text>
+            </view>
+          </ui-card>
+        </view>
+      </ui-skeleton>
+    </view>
   </block>
 </view>

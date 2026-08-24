@@ -30,7 +30,7 @@ const MIN_MEMBERS = 4; // 开桌下限（schema: members 4–6）
 const MAX_MEMBERS = 6; // 开桌上限（schema: members 4–6）
 
 // 列表只回传必要字段（降传输体积；match_groups 无敏感字段）
-const MATCH_FIELDS = ['_id', 'event_id', 'members', 'matched_at'];
+const MATCH_FIELDS = ['_id', 'event_id', 'members', 'match_score', 'matched_at'];
 
 // ---- 问卷驱动匹配（task-024 下）----
 // 同频打分：budget 接近度 + taboo 冲突惩罚 + topics/personality 重合度。

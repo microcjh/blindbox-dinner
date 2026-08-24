@@ -189,7 +189,7 @@ async function run() {
   makeEvent('e_mm_2', { city: '上海', district: '浦东新区', time: FUTURE });
   // 预置两桌，其中一桌含当前用户
   cloud.__store.match_groups = cloud.__store.match_groups || [];
-  cloud.__store.match_groups.push({ _id: 'mg_1', event_id: 'e_mm_1', members: [uid, 'x2', 'x3', 'x4'], matched_at: FUTURE });
+  cloud.__store.match_groups.push({ _id: 'mg_1', event_id: 'e_mm_1', members: [uid, 'x2', 'x3', 'x4'], match_score: 88, matched_at: FUTURE });
   cloud.__store.match_groups.push({ _id: 'mg_2', event_id: 'e_mm_2', members: ['y1', 'y2', 'y3', 'y4'], matched_at: FUTURE });
 
   // 8) myMatches 仅返回含当前用户的桌 + 关联场次摘要
@@ -199,6 +199,7 @@ async function run() {
   ok(Array.isArray(r.data.list) && r.data.list.length === 1, 'myMatches 列表结构正确');
   ok(r.data.list[0].event && r.data.list[0].event.id === 'e_mm_1', '桌关联了场次摘要');
   ok(Array.isArray(r.data.list[0].members) && r.data.list[0].members.includes(uid), '桌 members 含当前用户');
+  ok(r.data.list[0].match_score === 88, 'myMatches 透出 match_score（task-024 修复：MATCH_FIELDS 补齐）');
 
   // 9) 未登录 myMatches → 401
   r = await main({ action: 'myMatches' });

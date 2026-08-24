@@ -245,3 +245,9 @@
 - **约束不变**：已支付门槛、4 人开桌下限、`matched` 防重复凑桌、幂等翻转，与 §22 完全一致；仅"选人策略"从"先到先得"升级为"同频优先"。
 - **错误码语义**：问卷 未登录 401 / 未实名 402 / 参数 400（必填缺失·类型错·budget 越界）/ 不存在 404 / 异常 500；与 §7 统一错误码表一致。
 - **前端门面收敛**：页面只调 `questionnaireService.submitQuestionnaire/getQuestionnaire/getPublicDimension`（见 §16），**不得裸调 `callFunction`**；`submitQuestionnaire` 写操作走默认 loading，`get*` 浏览类 `loading:false`。问卷页 `pages/questionnaire` 接通：表单（口味/性格/预算/忌口·话题·期待 chips 多选）+ 实名前置分流（未登录→login / 未实名→realname）+ 已填回显 + 提交后回退/回首页。
+
+## §27 我的桌展示（task-025）
+- **「我的桌」= 用户参与凑桌成功的 `match_groups`**：前端 `pages/profile` 已登录态下并行调用 `matchService.myMatches()`（浏览类 `loading:false`，见 §16/§22），与"我的饭局"（`eventService.myRegistrations`）双区块并列展示。
+- **match_score 透出硬约束**：`cloudfunctions/match` 的 `MATCH_FIELDS` **必须含 `match_score`**（task-024 初版漏写导致 `myMatches` 查不到同频分，已修复并补单测断言）。落库与 `toMatchView` 均透传 `match_score`，任何"我的桌"展示依赖该字段时不得再从 `MATCH_FIELDS` 裁剪掉。
+- **派生纯函数在前端做**：`profile.js` 的 `loadMyTables` 把 `myMatches` 每条 `{id,event,members,match_score}` 派生为展示行（`city/district/timeText/priceText/memberCount/matchScore/isMine`），不内联复杂逻辑；`timeText/priceText` 复用 `utils/format`（`formatEventTime`/`formatPrice`）。
+- **展示维度**：卡片显示场次（城市·区/时间/价格）+ 同桌人数 + **同频分 match_score**（让用户感知"盲盒同频"依据）；点击进 `event-detail`。同频分仅作展示，不参与权限/状态判断。
