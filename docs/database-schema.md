@@ -18,7 +18,7 @@
 | **questionnaires** | _id, user_id, diet_pref, taboo[], budget, topics[], personality, expect[], created_at | json/array | user_id 唯一 |
 | **events** | _id, city, district, restaurant_id, time, price, capacity, registered, status | string/datetime/int | capacity≤6 |
 | **match_groups** | _id, event_id, members[](user_id), match_score | array/json | members 4–6 |
-| **registrations** | _id, user_id, event_id, status(pending/paid/refunded), paid_at | string/datetime | (user_id,event_id) 唯一 |
+| **registrations** | _id, user_id, event_id, status(pending/paid/refunded), matched, paid_at | string/datetime/bool | (user_id,event_id) 唯一 |
 | **payments** | _id, reg_id, amount, status, transaction_id, created_at | string/decimal | transaction_id 唯一 |
 | **restaurants** | _id, name, address, cuisine, avg_price, rating, lng, lat, verified | string/number | verified 默认 false |
 | **reviews** | _id, event_id, from_uid, to_uid, score, tags[], comment, created_at | int/array | (from,to,event) 唯一 |
