@@ -1,8 +1,9 @@
-// pages/event-detail/event-detail.js — 场次详情 + 报名
-// 链路:eventService.getEvent → 展示 → 报名(register)/取消(unregister)
+// pages/event-detail/event-detail.js — 场次详情 + 报名 + 支付
+// 链路:eventService.getEvent → 展示 → 报名(register) → (付费场次)支付(payment)
 // 报名前置分流:未登录→login;未实名→realname;已报名→提示;已满→禁用
 const eventService = require('../../services/event');
 const authService = require('../../services/auth');
+const paymentService = require('../../services/payment');
 const { formatEventTime, formatPrice } = require('../../utils/format');
 
 Page({
@@ -103,9 +104,30 @@ Page({
 
     this.setData({ registering: true });
     try {
+      // 1) 先报名（落 registrations: pending）
       await eventService.register(this.data.id);
-      wx.showToast({ title: '报名成功', icon: 'success' });
-      // 刷新详情（registered+1）与我的报名态
+
+      // 2) 免费场次：报完即成功；付费场次：调统一下单 + 拉起微信支付
+      const price = (this.data.event && this.data.event.price) || 0;
+      if (price > 0) {
+        const prepay = await paymentService.createPrepay(this.data.id);
+        const payRes = await paymentService.pay(prepay);
+        if (!payRes.success) {
+          if (payRes.reason === 'cancelled') {
+            wx.showToast({ title: '已报名，待支付', icon: 'none' });
+          } else {
+            wx.showToast({ title: '支付未完成，可在「我的报名」继续支付', icon: 'none' });
+          }
+          // 报名保留 pending，刷新座位与报名态（不翻 paid）
+          await this.loadDetail();
+          return;
+        }
+        wx.showToast({ title: '报名并支付成功', icon: 'success' });
+      } else {
+        wx.showToast({ title: '报名成功', icon: 'success' });
+      }
+
+      // 3) 刷新详情（registered+1 / paid 态由支付通知异步翻转，此处先 local 呈现）
       await this.loadDetail();
     } catch (e) {
       // 409/其他已由 request 层提示

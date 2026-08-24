@@ -176,3 +176,12 @@
 - **报名前置分流在页面内做**：详情页 `onRegister` 顺序判断——未登录 `→ navigateTo login`、未实名 `→ navigateTo realname`、已报名/已满 `→ toast` 拦截；该分流依赖 `services/auth.isLoggedIn()/isVerified()`（见 §14/§16），不把登录态判断散落到 services/event 内部。
 - **「我是否已报名」用 `myRegistrations` 推断**：详情页 `onShow`/`loadDetail` 后调 `eventService.myRegistrations()`，按 `event.id` 匹配当前场次，得出 `registered` 决定吸底按钮显示「立即报名」还是「取消报名」；推断失败（网络/未登录）不阻断浏览，保持 `registered=false`。
 - **展示格式化走纯函数**：`utils/format.js` 的 `formatEventTime/formatPrice` 为无 wx 依赖纯函数，列表与详情共用，避免 WXML 内联运算、便于单测。
+
+## 20. 支付约定（见 cloudfunctions/payment + common/pay + services/payment + pages/event-detail）
+
+- **先报名后支付**：`register` 落 `registrations(pending)`，`payment.create` 仅对已存在的 pending 报名下单，`schema` 中 `registrations.status` 由 `pending→paid`（退款任务接 `refunded`）；金额来自 `events.price`（元，下单时 ×100 转分）。
+- **支付结果以服务端通知为准**：`payment.notify`（即 `unifiedOrder` 指定的 `functionName='payment'`）落 `payments(paid)` + 翻转 `registrations(paid)`，`payments.transaction_id` 幂等（唯一索引）；客户端 `query` 仅作兜底轮询，正常不依赖。
+- **真实商户号走环境变量**：`common/pay.isPayConfigured()` 读 `WXPAY_SUB_MCH_ID`；未配置时 `payment.create` 返回 `devStub` 占位（不触真实计费，与 faceverify dev 占位同范式），前端 `services/payment.pay()` 在 devStub 时直接 resolve，便于开发演示；真实配置（商户号/证书/APIv3 key）接入留独立任务。
+- **前端门面收敛支付**：页面只调 `paymentService.createPrepay(eventId)` + `paymentService.pay(prepay)`（真实 prepay 调 `wx.requestPayment`，取消 resolve `{success:false,reason:'cancelled'}`），**不得裸调 `callFunction` 或 `wx.requestPayment`**；`createPrepay` 走默认 loading，`query` 用 `loading:false`。
+- **详情页付费流程**：`event-detail.onRegister` 顺序——`register` →（price>0）`createPrepay`+`pay`；支付取消保留 pending（toast「待支付」并 `loadDetail` 刷新，不翻 paid）；付费成功 toast「报名并支付成功」。免费场次跳过支付直接成功。
+- **退款前置**：`register.unregister` 对 `paid` 报名返回 `409`（提示走退款流程），退款由后续 refund 任务处理；支付链路与退款链路在 `payments/registrations` 状态机上解耦。
