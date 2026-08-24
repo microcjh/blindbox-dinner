@@ -1,3 +1,17 @@
-<view class="placeholder">
-  <text>首页 · 建设中</text>
+<!-- pages/login/login.wxml — 微信登录页 -->
+<view class="login">
+  <view class="login__logo">🍜</view>
+  <view class="login__name">盲盒约饭</view>
+  <view class="login__slogan">和陌生的 TA，吃一顿未知的饭</view>
+
+  <ui-button
+    type="primary"
+    block
+    size="large"
+    loading="{{logging}}"
+    disabled="{{logging}}"
+    bind:tap="onLogin"
+  >微信一键登录</ui-button>
+
+  <view class="login__tip">登录即同意《用户协议》与《隐私协议》</view>
 </view>

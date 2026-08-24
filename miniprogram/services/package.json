@@ -1,0 +1,10 @@
+{
+  "name": "blindbox-dinner-services",
+  "version": "1.0.0",
+  "description": "前端业务服务层(auth/verify 云函数调用封装)及离线单测(Node 环境)",
+  "private": true,
+  "scripts": {
+    "test": "node verify.test.js && node auth.test.js"
+  },
+  "license": "MIT"
+}

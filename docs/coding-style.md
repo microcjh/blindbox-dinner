@@ -139,3 +139,11 @@
 - **人脸核身外部依赖必须 mock**：`common/faceverify.faceVerify(verifyResult)` 在未配置 `WX_FACE_VERIFY_RULE_ID` 时走本地格式校验（派生稳定 `face_token` 占位），**不发起真实腾讯云调用、不触发实名计费**（见 `docs/testing.md`）；生产真实 `CheckE证通` 接入留待 task-034（需安装 tencentcloud SDK 并配 `WX_FACE_VERIFY_RULE_ID`）。verify 云函数只依赖 `faceVerify()` 返回值，真实 SDK 接入不影响调用方。
 - **错误码语义**：未登录 `401`、姓名/身份证/核身结果参数 `400`、人脸核身未通过 `403`、已实名重复提交 `409`（返回当前公开档案，不重复写库）、用户不存在 `404`、异常 `500`。前端 `isVerified()` 据 `user.verified` 判断，实名页据此跳转。
 - **身份解析复用令牌**：`verify` 用 `verifyToken(event.token)` 取 `uid` 写 `users`；与 auth 一致，也可改用 `wxContext.OPENID`（云开发恒可靠），二选一保持一致。
+
+## 16. 前端 services 业务层约定（见 miniprogram/services）
+
+- **分层职责**：`utils/request.js` 只负责「统一云函数调用 + token 注入 + 错误码转文案」；`utils/auth.js` 负责「会话态存储 + 401 重登钩子」（被 `app.js` 全局依赖，页面不宜直接依赖其实现细节）；**页面/组件只依赖 `services/*`**，由 services 封装「调哪个云函数、成功后刷新哪部分缓存」等业务动作。
+- **services 是云函数的 1:1 门面**：`services/auth.js` 封装 `auth` 云函数（`login/me/ensureSession` 等），`services/verify.js` 封装 `verify` 云函数（`startFaceVerify/submit`）。后续每个云函数（events/register/match/review/payment…）都应在这里有对应门面，页面不得自行 `callFunction` 裸调。
+- **人脸核身在 services 内封装**：`verify.startFaceVerify({name,idCard})` 调 `wx.startFacialRecognitionVerify` 取 `verifyResult`；DevTools / 未配核身能力时返回 dev 占位结果（标记 `__dev`，**不触真实计费**），与 `common/faceverify` 的 mock 策略对齐（见 §15、task-034）。页面只关心「拿到 verifyResult 交给 submit」。
+- **实名成功后刷新缓存**：`verify.submit` 在云函数返回后调用 `utils/auth.setUserInfo(user)` 把 `verified` 等公开档案写回本地，页面据此即时切换「已实名态」，无需额外 `me()` 拉取。
+- **测试同范式**：`services/*test.js` 复用全局 `global.wx` mock（含 `cloud.callFunction` 队列 + `storage` 模拟），纯 Node 运行，`scripts/test-all.sh` 已纳入，与云函数/组件/工具层共用同一闸门；新增 services 必须带单测覆盖「成功写缓存 / 参数透传 / 业务错误不覆盖缓存」。

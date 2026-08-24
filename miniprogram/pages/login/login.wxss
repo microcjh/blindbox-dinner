@@ -1,1 +1,33 @@
-/* 首页 页面样式（由对应任务填充） */
+/* pages/login/login.wxss */
+.login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 64rpx calc(80rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.login__logo {
+  font-size: 120rpx;
+  line-height: 1;
+}
+.login__name {
+  margin-top: 24rpx;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+.login__slogan {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: #8a8a8a;
+}
+
+.login__tip {
+  margin-top: 32rpx;
+  font-size: 22rpx;
+  color: #b5b5b5;
+  text-align: center;
+}
