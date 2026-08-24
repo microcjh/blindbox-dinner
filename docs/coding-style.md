@@ -131,3 +131,11 @@
 - **密钥**：生产必须配置云函数环境变量 `AUTH_TOKEN_SECRET`；未配置回退开发期常量，**仅本地/测试可用，严禁生产依赖回退值**。
 - **公开档案脱敏**：`auth` 的 `toPublicProfile` 必须剔除 `id_card_hash / openid / face_token`，并将 `_id` 重命名为 `id` 下发（见 §7/§8）；`user.verified` 默认 false，实名完成后由 task-012 `verify` 云函数写库并回填，`utils/auth.js` 的 `isVerified()` 据此判定。
 - **用户集合新增 `verified` 字段**（boolean，默认 false），已同步 `docs/database-schema.md`；`users.openid` 唯一索引（init-db 已建）即「一人一号」约束。
+
+## 15. 实名认证约定（见 cloudfunctions/verify + common/crypto + common/faceverify）
+
+- **强实名第二重：人脸核身**。`verify` 云函数 `action:'submit'` 负责把用户 `verified` 置 true，第二重护城河即「人脸核身通过」（`faceVerify` 返回 ok 才写库）；第一重「微信实名」由微信账号体系保证，第三重「双向评价黑名单」由 review/blacklist 负责。
+- **身份证只存哈希**：`common/crypto.hashIdCard(idCard)` 用 HMAC-SHA256（密钥 `ID_CARD_HASH_SECRET`，回退 `AUTH_TOKEN_SECRET`）计算，**明文身份证绝不落库、绝不进 `data` 下发**；公开档案 `toPublicProfile` 已剔除 `id_card_hash`，前端 `user` 缓存中无身份证信息（见 §7/§8、PIPL 合规）。
+- **人脸核身外部依赖必须 mock**：`common/faceverify.faceVerify(verifyResult)` 在未配置 `WX_FACE_VERIFY_RULE_ID` 时走本地格式校验（派生稳定 `face_token` 占位），**不发起真实腾讯云调用、不触发实名计费**（见 `docs/testing.md`）；生产真实 `CheckE证通` 接入留待 task-034（需安装 tencentcloud SDK 并配 `WX_FACE_VERIFY_RULE_ID`）。verify 云函数只依赖 `faceVerify()` 返回值，真实 SDK 接入不影响调用方。
+- **错误码语义**：未登录 `401`、姓名/身份证/核身结果参数 `400`、人脸核身未通过 `403`、已实名重复提交 `409`（返回当前公开档案，不重复写库）、用户不存在 `404`、异常 `500`。前端 `isVerified()` 据 `user.verified` 判断，实名页据此跳转。
+- **身份解析复用令牌**：`verify` 用 `verifyToken(event.token)` 取 `uid` 写 `users`；与 auth 一致，也可改用 `wxContext.OPENID`（云开发恒可靠），二选一保持一致。

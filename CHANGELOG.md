@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-08-24
+
+### Added
+- 实名认证云函数 `cloudfunctions/verify`：`action:'submit'` 校验 姓名 + 身份证 + 人脸核身结果，核身通过则回填 `users.verified/real_name/id_card_hash/face_token`，完成「强实名」第二重护城河（task-012）
+- 身份证脱敏哈希模块 `cloudfunctions/common/crypto.js`：`isValidIdCard`（18 位格式）+ `hashIdCard`（HMAC-SHA256，密钥 `ID_CARD_HASH_SECRET` 回退 `AUTH_TOKEN_SECRET`），明文身份证只存哈希不落库（PIPL 合规）
+- 人脸核身封装 `cloudfunctions/common/faceverify.js`：`faceVerify(verifyResult)` 未配 `WX_FACE_VERIFY_RULE_ID` 走本地格式校验（不触真实计费，testing.md 约定），生产 `CheckE证通` 真实接入留待 task-034
+- `verify` 错误码：未登录 401 / 参数 400 / 核身未过 403 / 已实名 409 / 不存在 404 / 异常 500；重复实名不重复写库
+- `verify` 单测（mock wx-server-sdk + 复用真实 common 模块）：覆盖 未登录401 / 已实名409 / 姓名·身份证·缺核身400 / 核身失败403 / 实名成功回填+脱敏 / crypto+faceverify 单元
+- `coding-style.md` 新增第 15 节「实名认证约定」
+
 ## [0.1.6] - 2026-08-22
 
 ### Added
