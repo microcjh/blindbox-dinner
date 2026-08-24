@@ -221,3 +221,10 @@
 - **前端门面收敛**：页面只调 `reviewService.submitReview({eventId,toUid,score,tags,comment})` + `listReviews(eventId)`、`blacklistService.reportBlacklist({target,reason,detail})` + `listMyBlacklist()`（见 §16），**不得裸调 `callFunction`**；写操作（submit/report）走默认 loading，浏览类（list）`loading:false`。
 - **入口设在详情页「饭后沉淀」区块**：仅当用户 `syncMyTable()` 命中本场（`myMatches` 的 `event_id === 当前场次`）即为本桌成员，显示本桌其他成员 + 「评价/举报」按钮；成员昵称用 `饭友 + uid 后4位` 占位（真实昵称留待用户档案任务）；评价弹层 1–5 星选择，举报弹层原因输入（maxlength 50，与云函数 `REASON_MAX` 对齐）。`getUid()` 由 `utils/auth` 新增（解析公开档案 `id`，即 `users._id` / token `uid`），用于从 members 过滤掉自己。
 - **会话态基础能力补充**：`utils/auth.getUid()` / `services/auth.getUid()` 返回当前用户 uid，供需要从本地会话识别「我是谁」的场景（凑桌成员列表过滤、评价对象区分）。
+
+## 24. 一键 SOS 约定（见 cloudfunctions/sos + services/sos + pages/event-detail）
+
+- **饭局中安全兜底**：SOS 是「强实名 + 人脸核身 + 评价/黑名单」之后的**最后一道安全网**——任何已登录用户均可一键发起求助，覆盖「报名后到场前 / 到场中」的焦虑与真实危险场景；不强制「必须已凑桌」，最大化兜底覆盖面。
+- **云函数 three actions**：`create`（落 `sos(status=pending)`，须关联 event_id 且场次存在，type 白名单 `unsafe/lost/medical/other`）/ `query`（按 id 浏览）/ `mine`（我的求助列表，按 created_at 降序）。错误码 未登录 `401` / 参数 `400`（缺 event_id、type 非法）/ 场次不存在 `404` / 异常 `500`。
+- **前端门面收敛**：页面只调 `sosService.createSos({eventId,type,desc,location})` + `querySos(id)` + `mySos()`（见 §16），**不得裸调 `callFunction`**；写操作（createSos）走默认 loading，浏览类（querySos/mySos）`loading:false`。
+- **入口设在详情页右上角固定浮标**：`pages/event-detail` 的 `.sos-fab` 浮标（红色圆形「SOS」），`onSos` 前置分流（未登录→login）/ 二次确认（`wx.showModal` 红字确认，防误触）/ `sosSending` 防重复点击；提交成功 `wx.showToast('已发出求助')`。真实处置联动（平台客服 / 线下）留 admin 任务，云函数内 `status=pending` 为处置锚点。
