@@ -147,3 +147,12 @@
 - **人脸核身在 services 内封装**：`verify.startFaceVerify({name,idCard})` 调 `wx.startFacialRecognitionVerify` 取 `verifyResult`；DevTools / 未配核身能力时返回 dev 占位结果（标记 `__dev`，**不触真实计费**），与 `common/faceverify` 的 mock 策略对齐（见 §15、task-034）。页面只关心「拿到 verifyResult 交给 submit」。
 - **实名成功后刷新缓存**：`verify.submit` 在云函数返回后调用 `utils/auth.setUserInfo(user)` 把 `verified` 等公开档案写回本地，页面据此即时切换「已实名态」，无需额外 `me()` 拉取。
 - **测试同范式**：`services/*test.js` 复用全局 `global.wx` mock（含 `cloud.callFunction` 队列 + `storage` 模拟），纯 Node 运行，`scripts/test-all.sh` 已纳入，与云函数/组件/工具层共用同一闸门；新增 services 必须带单测覆盖「成功写缓存 / 参数透传 / 业务错误不覆盖缓存」。
+
+## 17. events 场次云函数约定（见 cloudfunctions/events）
+
+- **列表默认只出可报名场次**：`list` 未显式传 `status` 时强制 `where.status = 'open'`，保证浏览页只见可报名场次；显式传 `status`（如 `closed`）则按传入，供后台/历史查看。
+- **索引左前缀命中**：`list` 筛选条件按 `city → district → status` 从左往右拼，命中 `events.idx_city_district_time`（city, district, time）+ `events.idx_status`；城市为最左前缀，缺城市时仍可按 status 命中 `idx_status`。
+- **详情关联餐厅不联表**：`detail` 取 `events` 后，按 `restaurant_id` 调 `getById('restaurants')` 单独取，**禁止文档库联表**；关联餐厅只下发 `name/cuisine/address/avg_price/rating/verified`，**绝不下发经纬度等内部字段**（见 §11 逻辑外键约定 + 隐私裁剪）。
+- **发起场次强实名**：`create` 复用「强实名护城河」，仅 `verified=true` 用户可发起（未实名返回 `402` 引导去实名页）；参数校验 `capacity ∈ [1,6]`（每桌 ≤6，见 `database-schema`）、`time` 须晚于当前、`price > 0`；落库 `registered=0`、`status = cap>0 ? 'open' : 'full'`。
+- **字段裁剪纪律**：`list` 只用 `fields` 回传列表所需字段（`_id/city/district/restaurant_id/time/price/capacity/registered/status`），events 本身无敏感字段，但遵循 §12 一致的裁剪风格；前端引用统一用 `id`（`_id` 重命名）。
+- **错误码语义**：未登录 `401`、参数 `400`、未实名 `402`、不存在 `404`、异常 `500`；与 §7 统一错误码表一致。
