@@ -8,6 +8,13 @@
 
 ## [Unreleased]
 
+### Added
+- **饭后双向评价云函数 `cloudfunctions/review`（task-020）**：`submit` 须登录 + 须为本桌成员（查 match_groups，members 同时含 from/to，跨桌返回 403）+ 唯一约束 (from,to,event) 防重复（409）+ 评分 1–5 / 不可评自己（400）；`list` 按 event_id 查该场次全部评价（浏览类）。错误码 401/400/403/404/409/500；复用 common/db + common/session，不下发敏感字段；15 项单测。
+- **黑名单（举报）云函数 `cloudfunctions/blacklist`（task-020）**：`report` 须登录 + 落 blacklist(status=pending)（缺对象/缺原因/举报自己 400）；`list` 返回「我举报的 + 关于我的」；13 项单测。
+- **前端业务门面** `miniprogram/services/review.js`（submitReview/listReviews）+ `blacklist.js`（reportBlacklist/listMyBlacklist），loading 语义对齐 §23；各 11/9 项单测，纳入 services/package.json 闸门。
+- **详情页接通饭后沉淀**：`pages/event-detail` 新增「饭后沉淀」区块（仅当 `syncMyTable()` 命中本场即本桌成员时显示），列出同桌其他成员 + 评价/举报按钮；评价弹层 1–5 星、举报弹层原因输入（maxlength 50）；`utils/auth` 新增 `getUid()`（`services/auth` 同步暴露）用于从 members 过滤自己。
+- `coding-style.md` 新增第 23 节「饭后双向评价 + 黑名单约定」；schema 中 reviews/blacklist 集合与索引（task-008 已预留）正式启用。
+
 ## [0.1.14] - 2026-08-24
 
 ### Added

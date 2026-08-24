@@ -79,3 +79,85 @@
   color: var(--color-text-sub);
   line-height: 1.9;
 }
+
+/* 饭后沉淀 */
+.table__tip {
+  font-size: 24rpx;
+  color: var(--color-text-sub);
+  margin-bottom: 16rpx;
+}
+.table__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 0;
+  border-top: 1rpx solid var(--color-border);
+}
+.table__row:first-of-type {
+  border-top: none;
+}
+.table__name {
+  font-size: 28rpx;
+  color: var(--color-text);
+  font-weight: 500;
+}
+.table__actions {
+  display: flex;
+}
+.table__actions ui-button {
+  margin-left: 12rpx;
+}
+
+/* 弹层 */
+.mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  z-index: 100;
+}
+.sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 36rpx 32rpx calc(36rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.sheet__title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 28rpx;
+  text-align: center;
+}
+.sheet__textarea {
+  width: 100%;
+  height: 180rpx;
+  box-sizing: border-box;
+  padding: 20rpx;
+  font-size: 28rpx;
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-card);
+  margin-bottom: 28rpx;
+  background: #fafafa;
+}
+.sheet ui-button {
+  margin-top: 16rpx;
+}
+
+/* 评分星星 */
+.stars {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32rpx;
+}
+.star {
+  font-size: 64rpx;
+  color: #d8d8d8;
+  margin: 0 10rpx;
+  transition: color 0.15s;
+}
+.star--on {
+  color: #FFB400;
+}

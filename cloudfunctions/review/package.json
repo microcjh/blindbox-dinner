@@ -1,0 +1,13 @@
+{
+  "name": "review",
+  "version": "1.0.0",
+  "description": "饭后双向评价云函数（task-020）",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

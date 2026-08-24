@@ -4,6 +4,9 @@
 const eventService = require('../../services/event');
 const authService = require('../../services/auth');
 const paymentService = require('../../services/payment');
+const matchService = require('../../services/match');
+const reviewService = require('../../services/review');
+const blacklistService = require('../../services/blacklist');
 const { formatEventTime, formatPrice } = require('../../utils/format');
 
 Page({
@@ -21,6 +24,13 @@ Page({
     isFull: false,
     // 我的报名态（由 myRegistrations 推断）
     registered: false,
+    // 饭后沉淀：是否为本场已凑桌成员 + 同桌其他成员
+    isTableMember: false,
+    tableMembers: [],
+    // 评价/举报弹层状态
+    reviewPanel: { open: false, toUid: '', toName: '', score: 5, submitting: false },
+    reportPanel: { open: false, target: '', reason: '', submitting: false },
+    reportTargetName: '',
   },
 
   onLoad(options) {
@@ -62,7 +72,10 @@ Page({
         loading: false,
         notFound: false,
       });
-      if (authService.isLoggedIn()) this.syncMyReg();
+      if (authService.isLoggedIn()) {
+        this.syncMyReg();
+        this.syncMyTable();
+      }
     } catch (e) {
       this.setData({ loading: false });
     }
@@ -78,6 +91,28 @@ Page({
       this.setData({ registered });
     } catch (e) {
       // 推断失败不阻断浏览，保持 registered=false
+    }
+  },
+
+  // 饭后沉淀：推断「我是否为本场已凑桌成员」+ 列出同桌其他成员
+  // 依赖 myMatches（match 云函数），命中 event_id === 当前场次即视为本桌成员
+  async syncMyTable() {
+    try {
+      const res = await matchService.myMatches();
+      const list = (res && res.list) || [];
+      const table = list.find((t) => t.event && t.event.id === this.data.id);
+      if (!table || !Array.isArray(table.members)) {
+        this.setData({ isTableMember: false, tableMembers: [] });
+        return;
+      }
+      const myUid = authService.getUid();
+      const others = table.members
+        .filter((uid) => uid !== myUid)
+        .map((uid) => ({ uid, name: `饭友 ${uid.slice(-4)}` }));
+      this.setData({ isTableMember: true, tableMembers: others });
+    } catch (e) {
+      // 推断失败不阻断浏览，保持 isTableMember=false
+      this.setData({ isTableMember: false, tableMembers: [] });
     }
   },
 
@@ -147,6 +182,85 @@ Page({
       // 409 已支付等已由 request 层提示
     } finally {
       this.setData({ registering: false });
+    }
+  },
+
+  // ===== 饭后沉淀：评价 / 举报 =====
+
+  // 打开评价弹层
+  onOpenReview(e) {
+    const { uid, name } = e.currentTarget.dataset;
+    this.setData({
+      reviewPanel: { open: true, toUid: uid, toName: name, score: 5, submitting: false },
+    });
+  },
+
+  // 评分选择（1–5）
+  onPickScore(e) {
+    const score = e.currentTarget.dataset.score;
+    this.setData({ 'reviewPanel.score': score });
+  },
+
+  // 关闭评价弹层
+  onCloseReview() {
+    this.setData({ 'reviewPanel.open': false });
+  },
+
+  // 提交评价
+  async onSubmitReview() {
+    const { toUid, score, submitting } = this.data.reviewPanel;
+    if (submitting) return;
+    this.setData({ 'reviewPanel.submitting': true });
+    try {
+      await reviewService.submitReview({ eventId: this.data.id, toUid, score });
+      this.setData({ 'reviewPanel.open': false });
+      wx.showToast({ title: '评价成功', icon: 'success' });
+    } catch (e) {
+      // 403/409/400 已由 request 层提示
+    } finally {
+      this.setData({ 'reviewPanel.submitting': false });
+    }
+  },
+
+  // 打开举报弹层
+  onOpenReport(e) {
+    const { uid, name } = e.currentTarget.dataset;
+    this.setData({
+      reportPanel: { open: true, target: uid, reason: '', submitting: false },
+      reportTargetName: name,
+    });
+  },
+
+  // 举报原因输入
+  onReportReasonInput(e) {
+    this.setData({ 'reportPanel.reason': e.detail.value });
+  },
+
+  // 关闭举报弹层
+  onCloseReport() {
+    this.setData({ 'reportPanel.open': false });
+  },
+
+  // 阻止弹层内容区点击冒泡到 mask（避免误关闭）
+  noop() {},
+
+  // 提交举报
+  async onSubmitReport() {
+    const { target, reason, submitting } = this.data.reportPanel;
+    if (submitting) return;
+    if (!reason || reason.trim().length === 0) {
+      wx.showToast({ title: '请填写举报原因', icon: 'none' });
+      return;
+    }
+    this.setData({ 'reportPanel.submitting': true });
+    try {
+      await blacklistService.reportBlacklist({ target, reason });
+      this.setData({ 'reportPanel.open': false });
+      wx.showToast({ title: '举报已提交', icon: 'success' });
+    } catch (e) {
+      // 400/401 已由 request 层提示
+    } finally {
+      this.setData({ 'reportPanel.submitting': false });
     }
   },
 });
