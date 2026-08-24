@@ -1,8 +1,6 @@
-// mock: 模拟 wx-server-sdk（events 云函数 + common/db 用到的能力）
-// 与 verify mock 的关键区别：collection(name) 返回**共享 ctx 的链对象**，
-// 其 where/orderBy/field/skip/limit 全部 return this，从而支持
-//   db.collection(n).where().orderBy().field().skip().limit().get()
-// 这类连续链式调用（common/db.query 正是如此）。
+// mock: 模拟 wx-server-sdk（register 云函数 + common/db 用到的能力）
+// 与 events mock 同范式：collection(name) 返回**共享 ctx 的链对象**，其方法全部 return this，
+// 支持 db.collection(n).where().orderBy().field().skip().limit().get() 连续链式调用。
 // 内存 store 按集合名隔离；通过 __reset / __store / __callLog 暴露状态供单测断言。
 const store = {}; // { collection: [record,...] }
 const seq = { n: 0 };
@@ -13,7 +11,7 @@ function genId() {
   return `mock_id_${seq.n}`;
 }
 
-// 等值 where 匹配（仅支持字面量等值，足够覆盖 events/common/db 场景）
+// 等值 where 匹配（仅支持字面量等值，足够覆盖 register/common/db 场景）
 function matchRecords(list, where) {
   if (!where || Object.keys(where).length === 0) return list.slice();
   return list.filter((r) => Object.keys(where).every((k) => r[k] === where[k]));
@@ -55,7 +53,6 @@ const cloud = {
         if (!store[name]) store[name] = [];
         const list = store[name];
 
-        // 共享 ctx：所有方法 return api，连续调用累积到同一 ctx
         const ctx = { where: {}, skipN: 0, limitN: 1000, fields: null, order: [] };
         const api = {
           where(cond) {
@@ -103,7 +100,6 @@ const cloud = {
             callLog.update.push(name);
             return { stats: { updated } };
           },
-          // doc 走独立链（按 _id 单条操作）
           doc(id) {
             return {
               field() { return this; },
@@ -165,7 +161,6 @@ cloud.__reset = () => {
 };
 
 cloud.__callLog = callLog;
-// getter 暴露 store，确保 __reset 清空后引用始终最新（避免测试拿到旧空对象）
 Object.defineProperty(cloud, '__store', {
   get() { return store; },
 });
