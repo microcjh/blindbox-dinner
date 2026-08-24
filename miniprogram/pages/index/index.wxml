@@ -1,3 +1,55 @@
-<view class="placeholder">
-  <text> · 建设中</text>
+<!-- pages/index/index.wxml — 场次列表（「场次」tab） -->
+<view class="list">
+
+  <!-- 区筛选 chips -->
+  <scroll-view class="chips" scroll-x enable-flex>
+    <view
+      wx:for="{{districts}}"
+      wx:key="*this"
+      class="chip {{activeDistrict === item ? 'chip--active' : ''}}"
+      data-district="{{item}}"
+      bindtap="onSelectDistrict"
+    >{{item}}</view>
+  </scroll-view>
+
+  <!-- 首次加载:骨架 -->
+  <skeleton wx:if="{{loading}}" loading="{{true}}" rows="{{4}}" />
+
+  <!-- 空态 -->
+  <empty
+    wx:elif="{{list.length === 0}}"
+    icon="🍜"
+    text="附近暂无正在报名的饭局"
+    desc="换个区域看看，或稍后再来"
+  />
+
+  <!-- 列表 -->
+  <view wx:else class="list__body">
+    <ui-card
+      wx:for="{{list}}"
+      wx:key="id"
+      class="card"
+      bind:tap="goDetail"
+      data-id="{{item.id}}"
+    >
+      <view class="ev">
+        <view class="ev__top">
+          <view class="ev__loc">{{item.city}} · {{item.district}}</view>
+          <ui-tag type="{{item.full ? 'error' : 'trust'}}" plain small>{{item.full ? '已满' : '可报名'}}</ui-tag>
+        </view>
+
+        <view class="ev__time">{{item.timeText}}</view>
+
+        <view class="ev__bottom">
+          <view class="ev__price">{{item.priceText}}<text class="ev__price-unit">/人</text></view>
+          <view class="ev__seats">已报 {{item.seats}} 人</view>
+        </view>
+      </view>
+    </ui-card>
+
+    <!-- 触底加载更多 -->
+    <view wx:if="{{loadingMore}}" class="list__more">加载中…</view>
+    <view wx:elif="{{finished}}" class="list__more">没有更多了</view>
+  </view>
+
 </view>

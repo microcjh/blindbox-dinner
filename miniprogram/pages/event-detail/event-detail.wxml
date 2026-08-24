@@ -1,3 +1,62 @@
-<view class="placeholder">
-  <text>实名 · 建设中</text>
+<!-- pages/event-detail/event-detail.wxml — 场次详情 + 报名 -->
+<view class="detail">
+
+  <skeleton wx:if="{{loading}}" loading="{{true}}" rows="{{4}}" />
+
+  <block wx:elif="{{!notFound}}">
+    <!-- 主信息 -->
+    <view class="hero">
+      <view class="hero__loc">{{event.city}} · {{event.district}}</view>
+      <view class="hero__time">{{timeText}}</view>
+      <view class="hero__price">{{priceText}}<text class="hero__price-unit">/人</text></view>
+      <view class="hero__seats {{isFull ? 'hero__seats--full' : ''}}">已报名 {{seatsText}} 人</view>
+    </view>
+
+    <!-- 餐厅信息 -->
+    <ui-card wx:if="{{restaurant}}" title="餐厅信息">
+      <view class="rest">
+        <view class="rest__name">{{restaurant.name}}</view>
+        <view class="rest__tags">
+          <ui-tag type="secondary" plain small>{{restaurant.cuisine}}</ui-tag>
+          <ui-tag type="trust" plain small wx:if="{{restaurant.verified}}">已认证</ui-tag>
+        </view>
+        <view class="rest__addr">{{restaurant.address}}</view>
+        <view class="rest__meta">人均 {{priceText}} · 评分 {{restaurant.rating}}</view>
+      </view>
+    </ui-card>
+
+    <!-- 约饭须知 -->
+    <ui-card title="约饭须知">
+      <view class="note">
+        <view class="note__item">· 强实名约饭，到场请配合身份核验</view>
+        <view class="note__item">· 报名后席位锁定，餐费现场 AA</view>
+        <view class="note__item">· 饭局中如遇不适，可一键 SOS</view>
+      </view>
+    </ui-card>
+  </block>
+
+  <empty wx:else icon="🍽️" text="场次不存在或已结束" desc="换个场次看看吧" />
+
+  <!-- 吸底操作条 -->
+  <bottom-bar bordered wx:if="{{!loading && !notFound}}">
+    <ui-button
+      wx:if="{{!registered}}"
+      type="primary"
+      block
+      size="large"
+      loading="{{registering}}"
+      disabled="{{registering || isFull}}"
+      bind:tap="onRegister"
+    >{{isFull ? '名额已满' : '立即报名'}}</ui-button>
+    <ui-button
+      wx:else
+      type="ghost"
+      block
+      size="large"
+      loading="{{registering}}"
+      disabled="{{registering}}"
+      bind:tap="onUnregister"
+    >取消报名</ui-button>
+  </bottom-bar>
+
 </view>
