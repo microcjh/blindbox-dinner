@@ -1,0 +1,12 @@
+{
+  "name": "admin",
+  "version": "1.0.0",
+  "description": "管理端（举报审核 + SOS 处置）云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

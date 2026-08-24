@@ -20,6 +20,9 @@
 - **一键 SOS 云函数 `cloudfunctions/sos`（task-022）**：`create` 须登录 + 关联 event_id 且场次存在（缺 event_id/type 非法 400、场次不存在 404）+ 落 `sos(status=pending)`（type 白名单 unsafe/lost/medical/other）；`query` 按 id 浏览、`mine` 我的求助列表（created_at 降序）。错误码 401/400/404/500；复用 common/db + common/session；20 项单测。
 - **前端业务门面** `miniprogram/services/sos.js`（createSos/querySos/mySos），loading 语义对齐 §24；3 项单测，纳入 services/package.json 闸门。
 - **详情页接通 SOS 浮标**：`pages/event-detail` 右上角红色圆形「SOS」浮标（`onSos` 前置分流未登录→login / 二次确认防误触 / `sosSending` 防重复）；`coding-style.md` 新增第 24 节 SOS 约定；schema 中 sos 集合与索引（task-008 已预留）正式启用。
+- **管理端云函数 `cloudfunctions/admin`（task-023）**：闭合 review/blacklist/sos 的「待处理」锚点——`listReports`/`handleReport`（decision=resolved|banned，须 pending 且存在，已处理 409）/ `listSos`/`handleSos`（标记 handled + 可选 note）。权限双校（verifyToken + 管理员白名单 env `ADMIN_UIDS`，非管理员 403）；错误码 401/403/400/404/409/500；17 项单测。
+- **前端管理端门面** `miniprogram/services/admin.js`（listReports/handleReport/listSos/handleSos），loading 语义对齐 §25；4 项单测，纳入 services/package.json 闸门。
+- `coding-style.md` 新增第 25 节 admin 约定；schema 中 blacklist.status(pending/resolved/banned) / sos.status(pending/handled) 枚举正式补全。
 
 ## [0.1.14] - 2026-08-24
 

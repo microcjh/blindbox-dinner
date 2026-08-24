@@ -4,7 +4,7 @@
   "description": "前端业务服务层(auth/verify 云函数调用封装)及离线单测(Node 环境)",
   "private": true,
   "scripts": {
-    "test": "node payment.test.js && node event.test.js && node verify.test.js && node auth.test.js && node match.test.js && node review.test.js && node blacklist.test.js && node refund.test.js && node sos.test.js"
+    "test": "node payment.test.js && node event.test.js && node verify.test.js && node auth.test.js && node match.test.js && node review.test.js && node blacklist.test.js && node refund.test.js && node sos.test.js && node admin.test.js"
   },
   "license": "MIT"
 }
