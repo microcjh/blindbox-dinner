@@ -23,6 +23,10 @@
 - **管理端云函数 `cloudfunctions/admin`（task-023）**：闭合 review/blacklist/sos 的「待处理」锚点——`listReports`/`handleReport`（decision=resolved|banned，须 pending 且存在，已处理 409）/ `listSos`/`handleSos`（标记 handled + 可选 note）。权限双校（verifyToken + 管理员白名单 env `ADMIN_UIDS`，非管理员 403）；错误码 401/403/400/404/409/500；17 项单测。
 - **前端管理端门面** `miniprogram/services/admin.js`（listReports/handleReport/listSos/handleSos），loading 语义对齐 §25；4 项单测，纳入 services/package.json 闸门。
 - `coding-style.md` 新增第 25 节 admin 约定；schema 中 blacklist.status(pending/resolved/banned) / sos.status(pending/handled) 枚举正式补全。
+- **问卷云函数 `cloudfunctions/questionnaire`（task-024 上）**：`submit` 须登录 + 强实名（402，复用 §15 护城河）+ 按 `user_id` 唯一索引幂等 upsert（重复提交覆盖不落重复文档）；`get` 查自己 full 维度 / 查他人仅公开维度（隐藏 `expect` 个人期待）。字段裁剪只回传必要维度，不触敏感字段；错误码 401/402/400/404/500；27 项单测。
+- **匹配算法接入问卷（task-024 下）**：改造 `cloudfunctions/match` 的 `handleRun`——凑桌前批量读候选人问卷公开维度，以首候选为锚按 `scorePair`（budget 接近度 30% + topics Jaccard 重合度 35% + personality 同频 20% + 无冲突 15%，taboo 互相命中强惩罚 ×0.6）同频优先选人，取前 4 人成一桌（上限 6）；**无问卷时回退纯先到先得**（保开桌下限不变）。落库 `match_groups.match_score`（两两均值）供前端「同频度」展示；已支付门槛 / 4 人下限 / matched 防重复 / 幂等翻转约束与 §22 完全一致。新增 15 项单测（同频优先 / 回退 / taboo 冲突挤出），match 单测合计 32 项。
+- **前端问卷门面 + 页接通（task-024）**：`miniprogram/services/questionnaire.js`（submitQuestionnaire/getQuestionnaire/getPublicDimension，loading 语义对齐 §16）+ 14 项单测，纳入 services/package.json 闸门；`pages/questionnaire` 由空壳接通（口味/性格/预算输入 + 忌口·话题·期待 chips 多选 + 实名前置分流 + 已填回显 + 提交回退/回首页）。
+- `coding-style.md` 新增第 26 节「问卷 + 同频匹配约定」；schema 中 `questionnaires` 集合（task-008 预留）正式启用写入链路。
 
 ## [0.1.14] - 2026-08-24
 

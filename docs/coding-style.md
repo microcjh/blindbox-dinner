@@ -236,3 +236,12 @@
 - **四个 action**：`listReports`（查 blacklist.status=pending，分页）/ `handleReport`（decision=resolved|banned，须 pending 且存在，已处理 409）/ `listSos`（查 sos.status=pending）/ `handleSos`（标记 handled + 可选 note，须 pending 且存在）。错误码 401/403/400/404/409/500。
 - **状态机**：blacklist `pending→resolved|banned`、sos `pending→handled`，处置时落 `handler`（管理员 uid）+ `handled_at` + `note`（≤500 字）；幂等靠"已处理则返回 409"防止重复翻转。
 - **前端门面收敛**：页面只调 `adminService.listReports/handleReport/listSos/handleSos`（见 §16），**不得裸调 `callFunction`**；写操作默认 loading，浏览类 `loading:false`。管理端 UI 非 MVP 必需，门面 + 单测先行，真实审核台后续独立任务接入。
+
+## 26. 问卷 + 同频匹配约定（见 cloudfunctions/questionnaire + cloudfunctions/match + services/questionnaire + pages/questionnaire）
+
+- **盲盒核心卖点落地**：产品定位第一句即"填问卷→系统凑同频陌生人"，`questionnaires` 集合（task-008 预留）此前无写入链路、`match.run` 纯先到先得——本任务补上「问卷写入」+「凑桌同频优先」，让"盲盒同频"名副其实。
+- **问卷云函数 `questionnaire`**：`submit`（须登录 + 强实名 402，复用 §15 护城河；按 `user_id` 唯一索引幂等 upsert，重复提交覆盖不落重复文档）+ `get`（查自己 full 维度 / 查他人仅公开维度 `diet_pref/taboo/budget/topics/personality`，隐藏 `expect` 个人期待）。错误码 401/402/400/404/409/500；字段裁剪只回传必要维度，不触敏感字段。
+- **同频匹配算法（改造 `match.run`）**：凑桌前 `loadQuestionnaires` 批量读候选人公开维度 → 以首候选（先报者）为锚，按 `scorePair` 两两打分——`budget` 接近度 30% + `topics` 重合度（Jaccard）35% + `personality` 同频 20% + 无冲突 15%，`taboo` 互相命中则强惩罚（整体 ×0.6）。按分降序取前 `MIN_MEMBERS(4)` 人成一桌（上限 `MAX_MEMBERS(6)`）；**无问卷时回退纯先到先得**（保开桌下限不变）。落库 `match_groups.match_score`（两两均值，供前端"同频度"展示 / 后续调优）。
+- **约束不变**：已支付门槛、4 人开桌下限、`matched` 防重复凑桌、幂等翻转，与 §22 完全一致；仅"选人策略"从"先到先得"升级为"同频优先"。
+- **错误码语义**：问卷 未登录 401 / 未实名 402 / 参数 400（必填缺失·类型错·budget 越界）/ 不存在 404 / 异常 500；与 §7 统一错误码表一致。
+- **前端门面收敛**：页面只调 `questionnaireService.submitQuestionnaire/getQuestionnaire/getPublicDimension`（见 §16），**不得裸调 `callFunction`**；`submitQuestionnaire` 写操作走默认 loading，`get*` 浏览类 `loading:false`。问卷页 `pages/questionnaire` 接通：表单（口味/性格/预算/忌口·话题·期待 chips 多选）+ 实名前置分流（未登录→login / 未实名→realname）+ 已填回显 + 提交后回退/回首页。
