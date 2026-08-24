@@ -33,6 +33,20 @@
         <view class="note__item">· 饭局中如遇不适，可一键 SOS</view>
       </view>
     </ui-card>
+
+    <!-- 饭后沉淀：仅本场已凑桌成员可见 -->
+    <ui-card wx:if="{{isTableMember}}" title="饭后沉淀">
+      <view class="table">
+        <view class="table__tip">饭局结束啦，给同桌饭友一个评价吧（不可跨桌）</view>
+        <view class="table__row" wx:for="{{tableMembers}}" wx:key="uid">
+          <view class="table__name">{{item.name}}</view>
+          <view class="table__actions">
+            <ui-button size="small" type="ghost" data-uid="{{item.uid}}" data-name="{{item.name}}" bind:tap="onOpenReview">评价</ui-button>
+            <ui-button size="small" type="ghost" data-uid="{{item.uid}}" data-name="{{item.name}}" bind:tap="onOpenReport">举报</ui-button>
+          </view>
+        </view>
+      </view>
+    </ui-card>
   </block>
 
   <empty wx:else icon="🍽️" text="场次不存在或已结束" desc="换个场次看看吧" />
@@ -58,5 +72,53 @@
       bind:tap="onUnregister"
     >取消报名</ui-button>
   </bottom-bar>
+
+  <!-- 评价弹层 -->
+  <view wx:if="{{reviewPanel.open}}" class="mask" bind:tap="onCloseReview">
+    <view class="sheet" catch:tap="noop">
+      <view class="sheet__title">评价 {{reviewPanel.toName}}</view>
+      <view class="stars">
+        <text
+          wx:for="{{[1,2,3,4,5]}}"
+          wx:key="*this"
+          class="star {{item <= reviewPanel.score ? 'star--on' : ''}}"
+          data-score="{{item}}"
+          bind:tap="onPickScore"
+        >★</text>
+      </view>
+      <ui-button
+        type="primary"
+        block
+        size="large"
+        loading="{{reviewPanel.submitting}}"
+        disabled="{{reviewPanel.submitting}}"
+        bind:tap="onSubmitReview"
+      >提交评价</ui-button>
+      <ui-button size="large" bind:tap="onCloseReview">取消</ui-button>
+    </view>
+  </view>
+
+  <!-- 举报弹层 -->
+  <view wx:if="{{reportPanel.open}}" class="mask" bind:tap="onCloseReport">
+    <view class="sheet" catch:tap="noop">
+      <view class="sheet__title">举报 {{reportTargetName}}</view>
+      <textarea
+        class="sheet__textarea"
+        placeholder="请描述举报原因（如言语冒犯、骚扰等）"
+        value="{{reportPanel.reason}}"
+        maxlength="50"
+        bindinput="onReportReasonInput"
+      />
+      <ui-button
+        type="primary"
+        block
+        size="large"
+        loading="{{reportPanel.submitting}}"
+        disabled="{{reportPanel.submitting}}"
+        bind:tap="onSubmitReport"
+      >提交举报</ui-button>
+      <ui-button size="large" bind:tap="onCloseReport">取消</ui-button>
+    </view>
+  </view>
 
 </view>

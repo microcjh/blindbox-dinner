@@ -70,6 +70,13 @@ function isLoggedIn() {
   return !!getToken();
 }
 
+// 当前用户 uid（公开档案 id，即 users._id；token 的 uid 与之同值）
+// 用于需要从本地会话识别「我是谁」的场景（如凑桌成员列表过滤自己）
+function getUid() {
+  const u = getUserInfo();
+  return (u && u.id) || '';
+}
+
 // 是否已实名:依赖 user.verified 字段(task-012 写库后回填)
 function isVerified() {
   const u = getUserInfo();
@@ -139,6 +146,7 @@ module.exports = {
   setUserInfo,
   isLoggedIn,
   isVerified,
+  getUid,
   login,
   ensureLogin,
   logout,

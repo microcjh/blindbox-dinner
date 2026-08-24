@@ -1,0 +1,13 @@
+{
+  "name": "blacklist",
+  "version": "1.0.0",
+  "description": "黑名单（举报）云函数（task-020）",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

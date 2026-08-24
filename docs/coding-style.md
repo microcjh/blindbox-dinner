@@ -202,3 +202,13 @@
 - **错误码语义**：未登录 `401`、参数 `400`、场次不存在 `404`、人数不足/已凑满 `409`、异常 `500`；与 §7 统一错误码表一致。
 - **前端门面收敛**：页面只调 `matchService.runMatch(eventId)` + `matchService.myMatches()`（见 §16），**不得裸调 `callFunction`**；`runMatch` 写操作走默认 loading，`myMatches` 浏览类 `loading:false`。通知类（订阅消息/饭局群）接入留独立任务，云函数内预留 `matched_at` 时间锚点供后续触发。
 - **`myMatches` 列表态**：`match_groups.members` 数组含 uid 即视为「我的桌」，返回时逐条 `getById(events)` 附场次摘要（city/district/time/price/restaurant_id），不联表、不前移敏感字段。
+
+## 23. 饭后双向评价 + 黑名单约定（见 cloudfunctions/review + cloudfunctions/blacklist + services/review + services/blacklist + pages/event-detail）
+
+- **强实名第三重护城河**：评价与举报是「强实名（第一重微信 + 第二重人脸核身）」之后的**社交信任兜底**——只有真实约过饭、且被系统确认为同桌的人，才能互评/被举报；评价数据沉淀为「饭友信用」，黑名单沉淀为「风险隔离」。（见 §13/§15）
+- **评价严格限定本桌**：`review.submit` 必须校验「评价者(from_uid) 与 被评者(to_uid) 同属一个 match_groups（同一 event_id 且 members 同时含双方）」，跨桌/陌生人无法评价，返回 `403`；唯一约束 `(from_uid,to_uid,event_id)` 防重复评价（`409`）；评分 `1–5`、不能评自己（`400`）；不下发任何敏感字段。
+- **举报轻量沉淀**：`blacklist.report` 仅落 `reporter/target/reason/detail/status=pending`（待审），不即时封禁，避免误伤；`list` 同时返回「我举报的」与「关于我的」，供前端信任安全中心展示。
+- **错误码语义**：评价 未登录 `401` / 参数 `400`（缺对象、评分越界、评自己）/ 非本桌 `403` / 场次不存在 `404` / 重复 `409` / 异常 `500`；举报 未登录 `401` / 参数 `400`（缺对象、缺原因、举报自己）/ 异常 `500`；与 §7 统一错误码表一致。
+- **前端门面收敛**：页面只调 `reviewService.submitReview({eventId,toUid,score,tags,comment})` + `listReviews(eventId)`、`blacklistService.reportBlacklist({target,reason,detail})` + `listMyBlacklist()`（见 §16），**不得裸调 `callFunction`**；写操作（submit/report）走默认 loading，浏览类（list）`loading:false`。
+- **入口设在详情页「饭后沉淀」区块**：仅当用户 `syncMyTable()` 命中本场（`myMatches` 的 `event_id === 当前场次`）即为本桌成员，显示本桌其他成员 + 「评价/举报」按钮；成员昵称用 `饭友 + uid 后4位` 占位（真实昵称留待用户档案任务）；评价弹层 1–5 星选择，举报弹层原因输入（maxlength 50，与云函数 `REASON_MAX` 对齐）。`getUid()` 由 `utils/auth` 新增（解析公开档案 `id`，即 `users._id` / token `uid`），用于从 members 过滤掉自己。
+- **会话态基础能力补充**：`utils/auth.getUid()` / `services/auth.getUid()` 返回当前用户 uid，供需要从本地会话识别「我是谁」的场景（凑桌成员列表过滤、评价对象区分）。

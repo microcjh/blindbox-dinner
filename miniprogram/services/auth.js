@@ -48,6 +48,7 @@ module.exports = {
   ensureLogin: auth.ensureLogin,
   isLoggedIn: auth.isLoggedIn,
   isVerified: auth.isVerified,
+  getUid: auth.getUid,
   getUserInfo: auth.getUserInfo,
   setUserInfo: auth.setUserInfo,
   me,
