@@ -111,7 +111,7 @@ async function run() {
 
   // 10. deriveMyRow: 付费 + paid → 已支付,canPay=false
   const paid = event.deriveMyRow({ id: 'r3', status: 'paid', event: { id: 'e3', city: '上海', price: 88, capacity: 4, registered: 3 } });
-  ok(paid.state === 'joined' && paid.stateText === '已支付' && paid.canPay === false, 'deriveMyRow 付费+paid → 已支付,不可再支付');
+  ok(paid.state === 'joined' && paid.stateText === '已支付' && paid.canPay === false && paid.canRefund === true, 'deriveMyRow 付费+paid → 已支付,可退款');
 
   // 11. deriveMyRow: event 缺失 → 兜底空值,不抛错
   const broken = event.deriveMyRow({ id: 'r4', status: 'pending' });

@@ -4,6 +4,7 @@
 const eventService = require('../../services/event');
 const authService = require('../../services/auth');
 const paymentService = require('../../services/payment');
+const refundService = require('../../services/refund');
 const { formatEventTime, formatPrice } = require('../../utils/format');
 
 Page({
@@ -14,6 +15,7 @@ Page({
     rows: [],
     notFound: false, // 未登录占位
     payingId: '', // 正在支付的 eventId（控制按钮 loading）
+    refundingId: '', // 正在退款的 eventId（控制按钮 loading）
   },
 
   onLoad() {
@@ -87,6 +89,34 @@ Page({
       // request 层已提示
     } finally {
       this.setData({ payingId: '' });
+    }
+  },
+
+  async onRefund(e) {
+    const { id } = e.currentTarget.dataset;
+    if (!id || this.data.refundingId) return;
+    const confirmed = await new Promise((resolve) => {
+      wx.showModal({
+        title: '申请退款',
+        content: '确认对该场次的报名费申请全额退款？退款将原路返回。',
+        confirmText: '确认退款',
+        success: (r) => resolve(!!r.confirm),
+      });
+    });
+    if (!confirmed) return;
+    this.setData({ refundingId: id });
+    try {
+      const res = await refundService.applyRefund(id);
+      if (res && res.duplicated) {
+        wx.showToast({ title: '已申请过退款', icon: 'none' });
+      } else {
+        wx.showToast({ title: '退款申请成功', icon: 'success' });
+      }
+      await this.loadMine();
+    } catch (err) {
+      // request 层已提示
+    } finally {
+      this.setData({ refundingId: '' });
     }
   },
 

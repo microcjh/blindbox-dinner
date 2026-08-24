@@ -186,11 +186,20 @@
 - **详情页付费流程**：`event-detail.onRegister` 顺序——`register` →（price>0）`createPrepay`+`pay`；支付取消保留 pending（toast「待支付」并 `loadDetail` 刷新，不翻 paid）；付费成功 toast「报名并支付成功」。免费场次跳过支付直接成功。
 - **退款前置**：`register.unregister` 对 `paid` 报名返回 `409`（提示走退款流程），退款由后续 refund 任务处理；支付链路与退款链路在 `payments/registrations` 状态机上解耦。
 
+## 20.1 退款约定（见 cloudfunctions/refund + services/refund + pages/profile）
+
+- **退款是 paid 态的专属闭环**：`refund.apply` 仅允许本人 `registrations.status==='paid'` 的报名退款；`pending`（未支付）应走 `unregister`（register 已 409 拦截），`refunded`（已退）幂等保护返回既有单，其他态返回 `409`「当前状态不可退款」。
+- **必须有有效支付记录才退**：先 `query payments`（where `reg_id` + `status='paid'`）取 `transaction_id`；无支付记录或 `transaction_id` 缺失均返回 `409`（防止 notify 未落账就退款）；金额取 `payments.amount`（全额退，不分摊）。
+- **真实退款走云支付退款 API**：`common/pay` 预留 `cloudPay.refund`（读 `WXPAY_SUB_MCH_ID`）；未配置商户号时 `refund.apply` 走 devStub 占位——直接标记 `refunds(success)` + 翻转 `registrations(refunded)`，不触真实计费（与 payment devStub 同范式）；真实路径下 `cloudPay.refund` 异步到账，此处简化标记 success（以退款通知为准留待后续）。
+- **幂等与落库**：`refund.apply` 先查 `refunds`（where `reg_id`）已有单则直接返回 `{duplicated:true}`；新单落 `refunds(pending)` 后调退款，成功翻 `refunds(success)` + `registrations(refunded, refunded_at)`。`refunds` 集合在 schema 已定义，`registrations.status` 新增 `refunded` 终态。
+- **前端门面收敛退款**：页面只调 `refundService.applyRefund(eventId)` + `queryRefund(regId)`，**不得裸调 `callFunction`**；`applyRefund` 走默认 loading（写操作），`queryRefund` 用 `loading:false`（浏览类）。
+- **profile 退款入口**：`deriveMyRow` 增 `canRefund = price>0 && status==='paid'`；卡片底部对 paid 行显示「申请退款」按钮（`catchtap onRefund`），`onRefund` 先 `wx.showModal` 二次确认，再调 `applyRefund`，成功后 `loadMine` 刷新（状态翻 refunded 后该按钮自动隐藏，与 canPay 互斥）。
+
 ## 21. 我的报名页（profile tab，见 miniprogram/pages/profile + services/event.deriveMyRow）
 
 - **profile 即「我的」tab，承载我的饭局列表**：原占位页（早期"紧急求助"模板）改造为 `eventService.myRegistrations()` 的消费页；导航栏标题由 `profile.json` 设为「我的」，列表为登录后私有数据。
 - **派生纯函数收敛在 services**：`services/event.deriveMyRow(reg)` 把 `register.my` 的一条 `{status,event}` 派生为展示行（state: joined/unpaid、stateText、priceText、timeText、seatsText、canPay）；**页面不内联派生逻辑**，便于单测（见 event.test.js 第8~11项），列表只 `filter(cancelled).map(deriveMyRow)`。
-- **付费态与继续支付**：`canPay = price>0 && status===\x27pending\x27` 时卡片底部显示「继续支付」按钮（`ui-button` 通栏 small），调 `paymentService.createPrepay + pay`（与详情页同源，devStub 直接成功）；支付成功后 `loadMine` 刷新（最终态由服务端 notify 异步翻转，列表短暂仍 unpaid 属预期）。
+- **付费态与继续支付**：`canPay = price>0 && status==='pending'` 时卡片底部显示「继续支付」按钮（`ui-button` 通栏 small），调 `paymentService.createPrepay + pay`（与详情页同源，devStub 直接成功）；支付成功后 `loadMine` 刷新（最终态由服务端 notify 异步翻转，列表短暂仍 unpaid 属预期）。`canRefund = price>0 && status==='paid'` 时显示「申请退款」按钮（见 §20.1），与 canPay 互斥。
 - **未登录前置分流**：`onLoad/onShow` 经 `authService.isLoggedIn()` 判定；未登录显示 `ui-empty` 引导「去登录」（`navigateTo login`），不拉列表；`onShow` 用于从 login/realname 返回后刷新登录态与列表。
 - **骨架/空态/下拉刷新**：列表区用 `ui-skeleton`（loading 时骨架，false 渲染插槽）；空列表 `ui-empty` 引导「去逛逛」（`switchTab` 到 `pages/index` —— tabBar 页必须用 switchTab，不能用 navigateTo）；`enablePullDownRefresh` 开启，下拉 `loadMine` 后 `stopPullDownRefresh`。
 - **点击进详情**：卡片整卡 `bindtap goDetail` 带 `eventId` 进 `event-detail`；「继续支付」按钮用 `catchtap` 阻止冒泡（避免触发卡片跳转）。
