@@ -8,6 +8,13 @@
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-08-24
+
+### Added
+- **match 匹配凑桌云函数**（task-019）：`run` 把某场次已支付(paid)且未 matched 的报名凑成一桌（开桌下限 4 人），落 `match_groups` 并标记 `registrations.matched=true` 防重复凑桌；`myMatches` 查我参与的桌 + 关联场次摘要。
+- **前端 match 门面** `services/match.js`（runMatch/myMatches）+ 8 项单测。
+- coding-style 第22节（匹配凑桌约定）；database-schema 补 registrations.matched 字段。
+
 ## [0.1.13] - 2026-08-24
 
 ### Added

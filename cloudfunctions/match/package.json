@@ -1,0 +1,12 @@
+{
+  "name": "match",
+  "version": "1.0.0",
+  "description": "盲盒约饭 - 匹配凑桌云函数",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

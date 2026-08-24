@@ -194,3 +194,11 @@
 - **未登录前置分流**：`onLoad/onShow` 经 `authService.isLoggedIn()` 判定；未登录显示 `ui-empty` 引导「去登录」（`navigateTo login`），不拉列表；`onShow` 用于从 login/realname 返回后刷新登录态与列表。
 - **骨架/空态/下拉刷新**：列表区用 `ui-skeleton`（loading 时骨架，false 渲染插槽）；空列表 `ui-empty` 引导「去逛逛」（`switchTab` 到 `pages/index` —— tabBar 页必须用 switchTab，不能用 navigateTo）；`enablePullDownRefresh` 开启，下拉 `loadMine` 后 `stopPullDownRefresh`。
 - **点击进详情**：卡片整卡 `bindtap goDetail` 带 `eventId` 进 `event-detail`；「继续支付」按钮用 `catchtap` 阻止冒泡（避免触发卡片跳转）。
+
+## 22. 匹配凑桌约定（见 cloudfunctions/match + services/match）
+
+- **凑桌以「已支付」为门槛**：`match.run` 只取某场次 `status=paid && matched!==true` 的报名凑桌（付费信任，与产品付费门槛一致），`pending`（待支付）报名不参与；开桌下限 4 人（`match_groups.members 4–6`，见 schema），不足 4 人返回 `409` 文案提示需满 4 人。
+- **落库与防重复**：凑桌成功落 `match_groups`（event_id + members[] + matched_at），并 `update(registrations, {matched:true}, {_id:{$in:[...]}})` 标记成员报名已凑桌；`matched` 字段是「一人一桌一次」的业务兜底，`match.run` 查询已 `matched!==true` 排除，重复触发不会把同一人凑进第二桌。
+- **错误码语义**：未登录 `401`、参数 `400`、场次不存在 `404`、人数不足/已凑满 `409`、异常 `500`；与 §7 统一错误码表一致。
+- **前端门面收敛**：页面只调 `matchService.runMatch(eventId)` + `matchService.myMatches()`（见 §16），**不得裸调 `callFunction`**；`runMatch` 写操作走默认 loading，`myMatches` 浏览类 `loading:false`。通知类（订阅消息/饭局群）接入留独立任务，云函数内预留 `matched_at` 时间锚点供后续触发。
+- **`myMatches` 列表态**：`match_groups.members` 数组含 uid 即视为「我的桌」，返回时逐条 `getById(events)` 附场次摘要（city/district/time/price/restaurant_id），不联表、不前移敏感字段。
