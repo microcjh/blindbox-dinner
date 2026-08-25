@@ -177,4 +177,9 @@ Page({
   goList() {
     wx.switchTab({ url: '/pages/index/index' });
   },
+
+  // 跳管理后台（subpackage 页；非管理员在后台页会看到「无权限」）
+  goAdmin() {
+    wx.navigateTo({ url: '/subpackages/admin/pages/console/index' });
+  },
 });

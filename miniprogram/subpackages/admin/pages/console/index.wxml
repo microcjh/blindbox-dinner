@@ -1,0 +1,58 @@
+<view class="admin">
+  <!-- 无管理员权限：云端 requireAdmin 返回 403 -->
+  <ui-empty wx:if="{{denied}}" icon="🔒" text="无管理员权限" desc="管理后台仅对管理员开放" />
+
+  <block wx:else>
+    <!-- 分段切换 -->
+    <view class="seg">
+      <view class="seg__item {{tab === 'reports' ? 'seg__item--active' : ''}}" data-tab="reports" bindtap="switchTab">举报审核</view>
+      <view class="seg__item {{tab === 'sos' ? 'seg__item--active' : ''}}" data-tab="sos" bindtap="switchTab">SOS 处置</view>
+    </view>
+
+    <!-- 举报审核 -->
+    <block wx:if="{{tab === 'reports'}}">
+      <ui-skeleton loading="{{reportsLoading}}" title="{{false}}" row-array="{{[80, 60, 40]}}">
+        <ui-empty wx:if="{{!reportsLoading && reports.length === 0}}" icon="✅" text="暂无待审举报" desc="用户发起举报后会在此出现" />
+        <view wx:else class="list">
+          <ui-card wx:for="{{reports}}" wx:key="id" class="card" padding="24rpx">
+            <view class="card__top">
+              <ui-tag type="error" small="{{true}}" plain="{{true}}">{{item.reason}}</ui-tag>
+              <text class="card__time">{{item.createdText}}</text>
+            </view>
+            <view class="card__route">
+              <text class="card__who">举报人 {{item.reporter}}</text>
+              <text class="card__arrow">→</text>
+              <text class="card__who">被举报 {{item.target}}</text>
+            </view>
+            <view class="card__detail" wx:if="{{item.detail}}">{{item.detail}}</view>
+            <view slot="footer" class="card__actions">
+              <ui-button type="ghost" size="small" data-id="{{item.id}}" data-decision="resolved" bind:tap="onHandleReport">标记处理</ui-button>
+              <ui-button type="primary" size="small" data-id="{{item.id}}" data-decision="banned" bind:tap="onHandleReport">封禁用户</ui-button>
+            </view>
+          </ui-card>
+        </view>
+      </ui-skeleton>
+    </block>
+
+    <!-- SOS 处置 -->
+    <block wx:if="{{tab === 'sos'}}">
+      <ui-skeleton loading="{{sosLoading}}" title="{{false}}" row-array="{{[80, 60, 40]}}">
+        <ui-empty wx:if="{{!sosLoading && sos.length === 0}}" icon="🆘" text="暂无待处置求助" desc="用户发起 SOS 求助后会在此出现" />
+        <view wx:else class="list">
+          <ui-card wx:for="{{sos}}" wx:key="id" class="card" padding="24rpx">
+            <view class="card__top">
+              <ui-tag type="warning" small="{{true}}" plain="{{true}}">{{item.type}}</ui-tag>
+              <text class="card__time">{{item.createdText}}</text>
+            </view>
+            <view class="card__who">用户 {{item.userId}} · 场次 {{item.eventId}}</view>
+            <view class="card__detail" wx:if="{{item.desc}}">{{item.desc}}</view>
+            <view class="card__loc" wx:if="{{item.location}}">📍 {{item.location}}</view>
+            <view slot="footer" class="card__actions">
+              <ui-button type="primary" size="small" data-id="{{item.id}}" bind:tap="onHandleSos">标记已处置</ui-button>
+            </view>
+          </ui-card>
+        </view>
+      </ui-skeleton>
+    </block>
+  </block>
+</view>
