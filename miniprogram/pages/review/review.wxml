@@ -1,3 +1,83 @@
-<view class="placeholder">
-  <text>邀请函 · 建设中</text>
+<!-- pages/review/review.wxml — 饭局评价 / 饭后沉淀 -->
+<view class="review">
+
+  <skeleton wx:if="{{loading}}" loading="{{true}}" rows="{{5}}" />
+
+  <block wx:elif="{{eventId}}">
+    <!-- 给同桌饭友打分 -->
+    <ui-card wx:if="{{members.length}}" title="给同桌饭友打分">
+      <view class="mb-tip">饭局结束啦，给同桌饭友一个评价吧（不可跨桌，仅可评一次）</view>
+      <view class="mb-row" wx:for="{{members}}" wx:key="uid">
+        <view class="mb-name">{{item.name}}</view>
+        <view class="mb-act">
+          <ui-button
+            wx:if="{{!item.reviewed}}"
+            size="small" type="ghost"
+            data-uid="{{item.uid}}" data-name="{{item.name}}"
+            bind:tap="onOpenReview"
+          >评价</ui-button>
+          <ui-tag wx:else type="success" plain small>已评</ui-tag>
+        </view>
+      </view>
+    </ui-card>
+
+    <!-- 大家的评价 -->
+    <ui-card title="饭后沉淀 · 大家的评价">
+      <view wx:if="{{reviews.length === 0}}" class="rev-empty">还没有人评价，快来当第一个～</view>
+      <view class="rev" wx:for="{{reviews}}" wx:key="id">
+        <view class="rev__head">
+          <text class="rev__from">{{item.fromName}}</text>
+          <text class="rev__arrow">评价了</text>
+          <text class="rev__to">{{item.toName}}</text>
+          <text class="rev__score">⭐ {{item.score}}</text>
+        </view>
+        <view class="rev__tags" wx:if="{{item.tags.length}}">
+          <ui-tag wx:for="{{item.tags}}" wx:for-item="t" wx:key="*this" type="secondary" plain small>{{t}}</ui-tag>
+        </view>
+        <view class="rev__comment" wx:if="{{item.comment}}">{{item.comment}}</view>
+        <view class="rev__time">{{item.timeText}}</view>
+      </view>
+    </ui-card>
+  </block>
+
+  <empty wx:else icon="🍽️" text="页面参数缺失" desc="请从场次详情进入" />
+
+  <!-- 评价弹层 -->
+  <view wx:if="{{panel.open}}" class="mask" bind:tap="onClosePanel">
+    <view class="sheet" catch:tap="noop">
+      <view class="sheet__title">评价 {{panel.toName}}</view>
+      <view class="stars">
+        <text
+          wx:for="{{[1,2,3,4,5]}}"
+          wx:key="*this"
+          class="star {{item <= panel.score ? 'star--on' : ''}}"
+          data-score="{{item}}"
+          bind:tap="onPickScore"
+        >★</text>
+      </view>
+      <view class="tags">
+        <text
+          wx:for="{{presetTags}}"
+          wx:key="label"
+          class="tag {{item.on ? 'tag--on' : ''}}"
+          data-tag="{{item.label}}"
+          bind:tap="onToggleTag"
+        >{{item.label}}</text>
+      </view>
+      <textarea
+        class="sheet__textarea"
+        placeholder="说点什么吧（选填，最多 200 字）"
+        value="{{panel.comment}}"
+        maxlength="200"
+        bindinput="onCommentInput"
+      />
+      <ui-button
+        type="primary" block size="large"
+        loading="{{panel.submitting}}" disabled="{{panel.submitting}}"
+        bind:tap="onSubmitReview"
+      >提交评价</ui-button>
+      <ui-button size="large" bind:tap="onClosePanel">取消</ui-button>
+    </view>
+  </view>
+
 </view>
