@@ -137,5 +137,11 @@
         </view>
       </ui-skeleton>
     </view>
+
+    <!-- 管理后台入口（仅管理员可用，云端 403 兜底） -->
+    <view class="admin-entry" bindtap="goAdmin">
+      <text class="admin-entry__text">管理后台</text>
+      <text class="admin-entry__chevron">›</text>
+    </view>
   </block>
 </view>

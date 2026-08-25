@@ -1,0 +1,90 @@
+/* subpackages/admin/pages/console/index.wxss — 管理后台 */
+.admin {
+  min-height: 100vh;
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+/* 分段切换 */
+.seg {
+  display: flex;
+  background: var(--color-surface);
+  border-radius: var(--radius-btn);
+  padding: 6rpx;
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-4);
+}
+.seg__item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: var(--color-text-sub);
+  border-radius: var(--radius-btn);
+  transition: all .15s ease;
+}
+.seg__item--active {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 列表 */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* 卡片 */
+.card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.card__time {
+  font-size: 22rpx;
+  color: var(--color-text-sub);
+}
+.card__route {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 26rpx;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+.card__who {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card__arrow {
+  color: var(--color-text-sub);
+}
+.card__detail {
+  font-size: 26rpx;
+  color: var(--color-text);
+  line-height: 1.6;
+  background: var(--color-bg);
+  border-radius: 8rpx;
+  padding: 12rpx 16rpx;
+  margin-bottom: var(--space-2);
+  word-break: break-all;
+}
+.card__loc {
+  font-size: 24rpx;
+  color: var(--color-text-sub);
+  margin-bottom: var(--space-2);
+}
+
+/* 底部操作区 */
+.card__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+.card__actions ui-button {
+  flex: 1;
+}

@@ -264,3 +264,9 @@
 - **字段语义**：`breakdown.taboo` 为**正向无冲突度**（100=同桌无人忌口冲突，60=存在忌口互相命中），与打分端 `tabooPenalty=0.4` 口径一致；四维均为 0–100 便于前端进度条直渲。
 - **优先展示个人分**：前端 `profile.js` 的 `loadMyTables` 派生 `scoreValue`/`scoreLabel`——有 `match_breakdown` 时显示"我的同频分"+ 四维进度条，否则退回桌级"同频分"；本人无问卷（`myQ` 为空）时后端不返回 breakdown，前端仅展示 `match_score`（与 §27 行为一致）。
 - **复用打分内核**：`scorePairBreakdown(qa,qb)` 返回 `{total, breakdown}`，`scorePair` 改为委托它仅取 `total`——保证"桌级 match_score"与 task-024 数值口径**完全一致**，不破坏既有单测。
+
+## §30 管理后台审核台（task-028）
+- **分包承载运营类非核心页**：admin 审核台（`举报审核` + `SOS 处置`）属运营/风控工具，非用户主链路，故放 `subpackages/admin`（root=`subpackages/admin`，pages=`pages/console/index`），**不进主包**，贴合「主包 < 2MB、非核心特性分包」红线。app.json 新增 `subpackages` 字段；主包页 `pages/profile` 底部加「管理后台」入口（`goAdmin` → `wx.navigateTo` 到 subpackage 绝对路径）。
+- **权限前端仅做"无权限态"展示，不信赖前端判定**：真实权限由 `cloudfunctions/admin` 的 `requireAdmin`（verifyToken + env `ADMIN_UIDS` 白名单）强制，非管理员任何 action 返回 **403**。前端 `callFunction` 已对 403 自动 toast 并 reject；审核台页面**捕获 403 后将整页切换为「无权限」占位（ui-empty 🔒）**，不展示任何待办数据。普通用户可见入口但打开即见无权限态——这是刻意设计（云端才是真闸门）。
+- **写操作走 loading:true 门面**：`handleReport(decision=resolved|banned)` 与 `handleSos` 复用 `services/admin` 的 `loading:true` 门面（写操作语义，见 §25）；列表 `listReports`/`listSos` 为浏览类 `loading:false`。处置前用 `wx.showModal` 二次确认（封禁文案更重），成功后 `wx.showToast` 并重新拉取当前 Tab 列表（已从列表移除已处理项）。
+- **数据透传不修改**：report 卡展示 `reason`(ui-tag type=error)/`reporter→target`/`detail`/`created_at`；sos 卡展示 `type`(ui-tag type=warning)/`user_id`/`event_id`/`desc`/`location`/`created_at`。时间统一 `fmtTime` 截 `MM-DD HH:mm`；字段名 `_id→id`、`user_id→userId`、`event_id→eventId` 在门面/页面层映射，与全仓 `toXxxView` 口径一致。

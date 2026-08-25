@@ -31,6 +31,7 @@
 - **修复：match_score 不返回（task-024 遗留）**：`cloudfunctions/match` 的 `MATCH_FIELDS` 漏写 `match_score`，导致 `myMatches` 查不到同频分；已补齐并补单测断言（myMatches 返回含 match_score），match 单测合计 33 项。
 - **订阅消息通知（task-026）**：新增 `cloudfunctions/common/subscribe.js` 薄封装 `sendMatchSuccess`（消费 env `SUBSCRIBE_TMPL_MATCH`，未配走 dev 占位不触真实发送）；`cloudfunctions/match` 落桌成功后 `notifyTable` 反查 members 的 `users.openid` 逐个下发「凑桌成功」通知（失败静默不阻断主流程）；`services/match.js` 增 `requestMatchSubscribe`（封装 `wx.requestSubscribeMessage`，常量模板 ID），`pages/event-detail` 在报名/支付成功后申请授权（最佳 opt-in 时机）。coding-style §28 + match 单测合计 35 项（含订阅触发断言）。
 - **同频分可解释性（task-027）**：`cloudfunctions/match` 的 `myMatches` 新增"个人同频分构成"——为每个桌计算"本人 vs 同桌其他成员"的 `my_match_score`（个人同频总分 0–100）+ `match_breakdown`（四维：budget 预算接近度 / topics 话题重合度 / personality 性格契合度 / taboo 忌口无冲突度，均 0–100）；**读时计算**（批量预取本人 + 同桌成员问卷公开维度后取均值），不落库、不改 `match_groups` schema，桌级 `match_score`（§27）仍兜底透出。打分内核重构为 `scorePairBreakdown`（返回 `{total, breakdown}`）+ 薄委托 `scorePair`，保证 `match_score` 口径与 task-024 完全一致；`breakdown.taboo` 为正向无冲突度（与 `tabooPenalty` 口径一致）。前端 `pages/profile`「我的桌」卡片展示"我的同频分"+ 四维进度条（无构成时退回桌级"同频分"）。`coding-style.md` 新增 §29；match 单测增 2 个可解释性场景（含本人无问卷兜底），合计 49 项。
+- **管理后台审核台 UI（task-028）**：补齐 admin 真实审核台页面（task-023 门面+单测已就绪）。新增 `subpackages/admin/pages/console`——`举报审核`（listReports + handleReport resolved/banned）+ `SOS 处置`（listSos + handleSos）双 Tab，含骨架/空态/下拉刷新；**403 整页切「无权限」占位**（云端 requireAdmin 才是真闸门，前端不信赖判定）。`app.json` 注册 `subpackages`；`pages/profile` 底部加「管理后台」入口（`goAdmin`）。`coding-style.md` 新增 §30。
 
 ## [0.1.14] - 2026-08-24
 
