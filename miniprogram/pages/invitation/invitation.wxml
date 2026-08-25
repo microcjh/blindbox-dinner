@@ -1,3 +1,63 @@
-<view class="placeholder">
-  <text>盲盒问卷 · 建设中</text>
+<view class="invite">
+  <view class="invite__hero">
+    <view class="invite__hero-emoji">🍽️</view>
+    <view class="invite__hero-title">约上饭友，一起拆盲盒</view>
+    <view class="invite__hero-sub">不知道会遇见谁，但一定有趣。把盲盒约饭分享给朋友吧～</view>
+  </view>
+
+  <!-- 邀请人身份 -->
+  <ui-card title="我的邀请身份">
+    <view class="identity">
+      <image wx:if="{{user && user.avatarUrl}}" class="identity__avatar" src="{{user.avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="identity__avatar identity__avatar--default">友</view>
+      <view class="identity__info">
+        <view class="identity__name">{{user.nickName}}</view>
+        <view class="identity__desc">{{loggedIn ? '分享时将带上你的专属邀请标识' : '登录后展示你的专属邀请身份'}}</view>
+      </view>
+      <ui-button wx:if="{{!loggedIn}}" size="small" type="ghost" bind:tap="goLogin">登录</ui-button>
+    </view>
+  </ui-card>
+
+  <!-- 三种分享方式 -->
+  <ui-card title="分享方式">
+    <view class="ways">
+      <view class="way">
+        <view class="way__icon">💬</view>
+        <view class="way__body">
+          <view class="way__title">分享给微信好友</view>
+          <view class="way__desc">一键转发，朋友点开即进入盲盒约饭</view>
+        </view>
+        <ui-button size="small" open-type="share">分享</ui-button>
+      </view>
+
+      <view class="way">
+        <view class="way__icon">🌈</view>
+        <view class="way__body">
+          <view class="way__title">分享到朋友圈</view>
+          <view class="way__desc">点击右上角「···」→ 分享到朋友圈</view>
+        </view>
+        <ui-tag type="warning">点右上角</ui-tag>
+      </view>
+
+      <view class="way">
+        <view class="way__icon">📋</view>
+        <view class="way__body">
+          <view class="way__title">复制邀请语</view>
+          <view class="way__desc">复制一段文案，粘贴到任意地方</view>
+        </view>
+        <ui-button size="small" type="ghost" bind:tap="copyInvite">复制</ui-button>
+      </view>
+    </view>
+  </ui-card>
+
+  <!-- 我的分享记录（本地存储，不涉及他人数据） -->
+  <ui-card title="我的分享记录">
+    <view wx:if="{{inviteRecords.length === 0}}" class="records__empty">还没有分享记录，去分享一下吧～</view>
+    <view wx:else class="records">
+      <view class="record" wx:for="{{inviteRecords}}" wx:key="at">
+        <text class="record__type">{{item.typeText}}</text>
+        <text class="record__time">{{item.timeText}}</text>
+      </view>
+    </view>
+  </ui-card>
 </view>
