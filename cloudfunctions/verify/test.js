@@ -24,9 +24,9 @@ Module._resolveFilename = function (req, parent, ...rest) {
 };
 
 const cloud = require('wx-server-sdk');
-const { signToken } = require(path.join(__dirname, '..', 'common', 'session'));
-const { isValidIdCard, hashIdCard } = require(path.join(__dirname, '..', 'common', 'crypto'));
-const { faceVerify } = require(path.join(__dirname, '..', 'common', 'faceverify'));
+const { signToken } = require('common/session');
+const { isValidIdCard, hashIdCard } = require('common/crypto');
+const { faceVerify } = require('common/faceverify');
 const main = require('./index.js').main;
 
 const SENSITIVE = ['openid', 'id_card_hash', 'face_token'];

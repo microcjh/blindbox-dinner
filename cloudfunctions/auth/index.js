@@ -11,14 +11,13 @@
 // 令牌：签发/校验走 common/session（HMAC-SHA256 无状态令牌，TTL 7 天，密钥 AUTH_TOKEN_SECRET）。
 // 依赖：common/db（查询/写入）、common/session（令牌）。
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, insert, getById } = require(path.join(__dirname, '..', 'common', 'db'));
-const { signToken, verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { query, insert, getById } = require('common/db');
+const { signToken, verifyToken } = require('common/session');
 
 const COLLECTION = 'users';
 

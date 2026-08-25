@@ -15,15 +15,14 @@
 // 错误码：401 未登录 / 400 参数 / 404 不存在（未报名/场次） / 409 冲突（已支付/已退款）
 //         / 503 第三方不可用（下单失败）
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, getById, insert, update } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
-const { isPayConfigured, unifiedOrder, resultNotification } = require(path.join(__dirname, '..', 'common', 'pay'));
+const { query, getById, insert, update } = require('common/db');
+const { verifyToken } = require('common/session');
+const { isPayConfigured, unifiedOrder, resultNotification } = require('common/pay');
 
 const REG_COLL = 'registrations';
 const PAY_COLL = 'payments';

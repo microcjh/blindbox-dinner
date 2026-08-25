@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### Changed
+- **云函数共享模块改用 CloudBase 公共模块（方案 A）**：`cloudfunctions/common/` 不再通过相对路径 `require(path.join(__dirname,'..','common',X))` 引用，全部改为裸模块 `require('common/X')`（共 13 个业务云函数 `index.js` + 各 `test.js`，约 44 处）；`common` 须作为 CloudBase「公共模块」上传一次（模块名 `common`），平台部署时注入各云函数 `node_modules/common`。本地解析由 `scripts/test-all.sh` 自动建 `cloudfunctions/node_modules/common → ../common` 软链保证一致。此改动解决「单个云函数上传不打包目录外 common、相对引用云端必崩」的部署硬阻塞（小程序启动前置）。全量单测保持通过。
+
 ### Added
 - **饭后双向评价云函数 `cloudfunctions/review`（task-020）**：`submit` 须登录 + 须为本桌成员（查 match_groups，members 同时含 from/to，跨桌返回 403）+ 唯一约束 (from,to,event) 防重复（409）+ 评分 1–5 / 不可评自己（400）；`list` 按 event_id 查该场次全部评价（浏览类）。错误码 401/400/403/404/409/500；复用 common/db + common/session，不下发敏感字段；15 项单测。
 - **黑名单（举报）云函数 `cloudfunctions/blacklist`（task-020）**：`report` 须登录 + 落 blacklist(status=pending)（缺对象/缺原因/举报自己 400）；`list` 返回「我举报的 + 关于我的」；13 项单测。

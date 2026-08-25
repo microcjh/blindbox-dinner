@@ -12,7 +12,7 @@ Module._resolveFilename = function (request, parent, ...args) {
 };
 
 const cloud = require('wx-server-sdk');
-const { signToken } = require('../common/session');
+const { signToken } = require('common/session');
 const main = require('./index.js').main;
 
 let passed = 0;

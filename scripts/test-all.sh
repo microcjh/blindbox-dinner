@@ -6,6 +6,15 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# 本地公共模块解析：将 cloudfunctions/common 软链到 cloudfunctions/node_modules/common，
+# 使 require('common/X') 在本地与云端「公共模块」解析方式一致（详见 docs/coding-style.md §12）。
+# 云端由 CloudBase 公共模块注入 node_modules/common；本地用软链等价模拟，保证 fresh clone 后单测可读 common。
+mkdir -p "$ROOT/cloudfunctions/node_modules"
+if [ ! -e "$ROOT/cloudfunctions/node_modules/common" ]; then
+  ln -s ../common "$ROOT/cloudfunctions/node_modules/common"
+fi
+
 found=0
 
 for dir in "$ROOT"/cloudfunctions/*/; do

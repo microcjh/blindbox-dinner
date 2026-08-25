@@ -15,14 +15,13 @@
 //
 // 错误码：401 未登录 / 402 未实名 / 400 参数（必填缺失/类型错） / 404 用户不存在 / 409 冲突（不可覆盖他人） / 500 异常
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, getById, insert, update } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { query, getById, insert, update } = require('common/db');
+const { verifyToken } = require('common/session');
 
 const COLL = 'questionnaires';
 const USERS = 'users';
