@@ -284,3 +284,11 @@
 - **写操作语义**：`createSos` 走默认 loading（request 层盖全局 loading）；提交前 `wx.showModal` 二次确认（confirmColor 红），避免误触。无 `eventId` 横幅提示并禁用提交按钮；未登录整页切 `ui-empty`（"去登录"action 插槽）。
 - **入口语义收敛**：`event-detail` 的 SOS 浮标由"内联 `createSos(type:'unsafe')`"改为 `wx.navigateTo` 到 `/pages/sos/sos?eventId=..`（保留登录前置分流）；类型选择 / 二次确认逻辑全部移入 sos 页，浮标回归"一键跳转"语义。
 - **权限合规**：`scope.userLocation` 的 `desc` 已在 `app.json` 声明（含"求助时上报位置"）；位置为选填且随用户点击触发，不触 `requiredPrivateInfos` 约束。
+
+### §33 邀请分享页（task-031）
+
+- **纯前端微信原生分享、不依赖自建后端**：`pages/invitation` 是"社交分发"环节，用微信原生 `onShareAppMessage`（好友）/ `onShareTimeline`（朋友圈）+ `wx.setClipboardData`（复制邀请语）驱动，不新建云函数/门面即可闭环。
+- **好友分享用 `ui-button open-type="share"` 透传**：`ui-button` 已透传 `open-type`（wxml `open-type="{{openType}}"`），故 `<ui-button open-type="share">` 即可触发页面 `onShareAppMessage`，视觉与全仓主按钮一致；不要在自定义组件外另写原生 button 承载分享。
+- **朋友圈仅能右上角触发**：`onShareTimeline` 只能由用户点右上角「···」发起，button 无法代为触发；UI 用 `ui-tag type="warning"` 提示"点右上角"，并在 `onLoad` 调 `wx.showShareMenu({ menus: ['shareAppMessage','shareTimeline'] })` 确保菜单含朋友圈项。
+- **inviter 参数透传、裂变统计待后端补**：`onShareAppMessage`/`onShareTimeline` 的 `path`/`query` 带 `inviter=<uid>&from=invite`，落地首页 `pages/index/index` 读取即可；"邀请关系/奖励"等裂变统计需后端（新建 invitation 云函数 + 落地页上报）后续补，本期仅透传不做统计。
+- **分享记录用本地 storage、合规安全**：`我的分享记录` 存于本地 `invite_records`（仅本人行为：渠道+时间），不涉及任何他人数据，符合 PIPL 最小必要原则；展示前把 `type→typeText`、`at→MM-DD HH:mm` 预格式化（WXML 不支持函数/Date 调用）。

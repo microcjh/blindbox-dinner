@@ -1,3 +1,10 @@
 {
-  "navigationBarTitleText": "盲盒问卷"
+  "navigationBarTitleText": "邀请好友",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "ui-card": "/components/ui-card/ui-card",
+    "ui-button": "/components/ui-button/ui-button",
+    "ui-tag": "/components/ui-tag/ui-tag",
+    "ui-empty": "/components/ui-empty/ui-empty"
+  }
 }
