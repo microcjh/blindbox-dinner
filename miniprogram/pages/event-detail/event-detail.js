@@ -7,7 +7,6 @@ const paymentService = require('../../services/payment');
 const matchService = require('../../services/match');
 const reviewService = require('../../services/review');
 const blacklistService = require('../../services/blacklist');
-const sosService = require('../../services/sos');
 const { formatEventTime, formatPrice } = require('../../utils/format');
 
 Page({
@@ -18,7 +17,6 @@ Page({
     loading: true,
     notFound: false,
     registering: false,
-    sosSending: false, // 防 SOS 重复点击
     // 展示字段（预计算）
     timeText: '',
     priceText: '',
@@ -270,37 +268,14 @@ Page({
     }
   },
 
-  // ===== 一键 SOS（饭局中安全兜底） =====
-  async onSos() {
-    if (this.data.sosSending) return;
-
+  // ===== 一键 SOS（饭局中安全兜底）：跳转求助页，由页面选类型 + 二次确认 =====
+  onSos() {
     // 前置分流：未登录跳转登录
     if (!authService.isLoggedIn()) {
       wx.navigateTo({ url: '/pages/login/login' });
       return;
     }
-
-    // 二次确认，避免误触
-    const confirmed = await new Promise((resolve) => {
-      wx.showModal({
-        title: '一键求助',
-        content: '确认向平台发起 SOS 求助？我们将联动线下处置。',
-        confirmText: '确认求助',
-        confirmColor: '#e54d42',
-        success: (res) => resolve(res.confirm),
-      });
-    });
-    if (!confirmed) return;
-
-    this.setData({ sosSending: true });
-    try {
-      await sosService.createSos({ eventId: this.data.id, type: 'unsafe' });
-      wx.showToast({ title: '已发出求助', icon: 'success' });
-    } catch (e) {
-      // 400/401/404 已由 request 层提示
-    } finally {
-      this.setData({ sosSending: false });
-    }
+    wx.navigateTo({ url: `/pages/sos/sos?eventId=${this.data.id}` });
   },
 
   // 跳「饭局评价」页：查看本场全部评价 + 给同桌饭友打分

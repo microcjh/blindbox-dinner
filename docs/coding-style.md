@@ -277,3 +277,10 @@
 - **reviewedUids 本地回显、云端 409 为权威**：评价页 `onLoad` 拉列表后用 `from_uid === myUid` 过滤出"我已评过的 to_uid"标记"已评"并禁用按钮（本地即时反馈）；提交成功后乐观加入 `reviewedUids` 并重拉列表。真实"不可重复"由 `cloudfunctions/review` 唯一约束（from,to,event）强制（409），前端判定仅作 UX 优化。
 - **预设标签上限 10 与云函数一致**：`PRESET_TAGS` 8 个正向标签，`onToggleTag` 选满 10 即停止（云函数 `tags.slice(0,10)`）；WXML 不支持 `.indexOf`，选中态用 `{label,on}` 对象数组驱动（`item.on` 直渲），提交时 `filter(on).map(label)` 还原。评论 `maxlength=200` 与云函数 `COMMENT_MAX=200` 对齐。
 - **无 members 也不崩**：评价页 `onLoad` 缺 `eventId` 整页切空态（ui-empty"页面参数缺失"）；有 `eventId` 但无 `members`（如深链进入）仅隐藏"给同桌打分"卡、仍可浏览本场评价。
+
+### §32 SOS 一键求助页（task-030）
+- **页面由占位"建设中"接通为真实求助页**：`onLoad` 取 `eventId` + 登录态；`loadEvent` 拉场次上下文（非关键，拿不到不阻断）；`loadMine` 调 `mySos`（浏览类 loading:false）展示"我的求助记录"（状态标签 pending=待处置 / handled=已处置 + 时间 `MM-DD HH:mm`）。
+- **表单四要素**：类型选择用 `{value,label,desc,on}` 对象数组驱动（规避 WXML 不支持 `.indexOf`），白名单 `unsafe/lost/medical/other` 与云函数 `VALID_TYPES` 一致；选填描述 `maxlength=200`；可选位置 `wx.getLocation`（gcj02），失败静默降级为不带位置（`withLocation=false` + toast），绝不阻断提交。
+- **写操作语义**：`createSos` 走默认 loading（request 层盖全局 loading）；提交前 `wx.showModal` 二次确认（confirmColor 红），避免误触。无 `eventId` 横幅提示并禁用提交按钮；未登录整页切 `ui-empty`（"去登录"action 插槽）。
+- **入口语义收敛**：`event-detail` 的 SOS 浮标由"内联 `createSos(type:'unsafe')`"改为 `wx.navigateTo` 到 `/pages/sos/sos?eventId=..`（保留登录前置分流）；类型选择 / 二次确认逻辑全部移入 sos 页，浮标回归"一键跳转"语义。
+- **权限合规**：`scope.userLocation` 的 `desc` 已在 `app.json` 声明（含"求助时上报位置"）；位置为选填且随用户点击触发，不触 `requiredPrivateInfos` 约束。
