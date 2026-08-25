@@ -213,6 +213,55 @@ async function run() {
   r = await main({ action: 'myMatches' });
   ok(r.code === 401, 'myMatches 缺令牌返回 401');
 
+  // ===== 同频分可解释性（task-027）=====
+  // 场景 10：本人 + 同桌均有问卷（含一段忌口冲突）→ myMatches 透出个人同频分构成
+  cloud.__reset();
+  makeUser(uid, { verified: true });
+  ['p2', 'p3', 'p4'].forEach((s) => makeUser(`u_${s}`, { verified: true }));
+  makeEvent('e_mb_1', { city: '北京', district: '朝阳区', time: FUTURE });
+  cloud.__store.match_groups = [{
+    _id: 'mg_b', event_id: 'e_mb_1', members: [uid, 'u_p2', 'u_p3', 'u_p4'],
+    match_score: 70, matched_at: FUTURE,
+  }];
+  cloud.__store.questionnaires = [];
+  // uid 与 p2/p3 同频（e人、话题重合、budget 接近）；p4 异频（i人/游戏/高预算）
+  // uid 与 p4 均忌口香菜 → 命中冲突，taboo 维度 <100
+  cloud.__store.questionnaires.push({ _id: 'qb1', user_id: uid, diet_pref: '川菜', taboo: ['香菜'], budget: 80, topics: ['旅行', '创业'], personality: 'e人' });
+  cloud.__store.questionnaires.push({ _id: 'qb2', user_id: 'u_p2', diet_pref: '川菜', taboo: [], budget: 85, topics: ['旅行'], personality: 'e人' });
+  cloud.__store.questionnaires.push({ _id: 'qb3', user_id: 'u_p3', diet_pref: '粤菜', taboo: [], budget: 90, topics: ['创业'], personality: 'e人' });
+  cloud.__store.questionnaires.push({ _id: 'qb4', user_id: 'u_p4', diet_pref: '日料', taboo: ['香菜'], budget: 200, topics: ['游戏'], personality: 'i人' });
+  r = await main({ action: 'myMatches', token });
+  ok(r.code === 0, 'myMatches（可解释性）查询成功');
+  const tb = r.data.list[0];
+  ok(typeof tb.my_match_score === 'number', '透出个人同频分 my_match_score（数字）');
+  ok(tb.my_match_score === 61, 'my_match_score 为本人 vs 同桌均值（≈61）');
+  ok(tb.match_breakdown && typeof tb.match_breakdown.budget === 'number', '透出同频分构成 budget');
+  ok(tb.match_breakdown.budget === 78, '预算接近度构成值正确（≈78）');
+  ok(tb.match_breakdown.topics === 33, '话题重合度构成值正确（≈33）');
+  ok(tb.match_breakdown.personality === 83, '性格契合度较高（同 e人，≈83）');
+  ok(tb.match_breakdown.taboo === 87, '存在忌口冲突 → taboo 维度 <100（≈87）');
+  ok(tb.match_score === 70, '桌级 match_score 仍透出（§27 约束）');
+
+  // 场景 11：本人无问卷（同桌有问卷）→ 仅透出桌级 match_score，不返回个人构成
+  cloud.__reset();
+  makeUser(uid, { verified: true });
+  ['n2', 'n3', 'n4'].forEach((s) => makeUser(`u_${s}`, { verified: true }));
+  makeEvent('e_mn_1', { city: '北京', district: '朝阳区', time: FUTURE });
+  cloud.__store.match_groups = [{
+    _id: 'mg_n', event_id: 'e_mn_1', members: [uid, 'u_n2', 'u_n3', 'u_n4'],
+    match_score: 73, matched_at: FUTURE,
+  }];
+  cloud.__store.questionnaires = [];
+  cloud.__store.questionnaires.push({ _id: 'qn2', user_id: 'u_n2', diet_pref: '川菜', taboo: [], budget: 80, topics: ['旅行'], personality: 'e人' });
+  cloud.__store.questionnaires.push({ _id: 'qn3', user_id: 'u_n3', diet_pref: '粤菜', taboo: [], budget: 90, topics: ['创业'], personality: 'e人' });
+  cloud.__store.questionnaires.push({ _id: 'qn4', user_id: 'u_n4', diet_pref: '日料', taboo: [], budget: 200, topics: ['游戏'], personality: 'i人' });
+  r = await main({ action: 'myMatches', token });
+  ok(r.code === 0, 'myMatches（本人无问卷）查询成功');
+  ok(r.data.total === 1, 'myMatches 仅返回本人所在桌');
+  ok(r.data.list[0].match_breakdown === undefined, '本人无问卷 → 不返回 match_breakdown');
+  ok(r.data.list[0].my_match_score === undefined, '本人无问卷 → 不返回 my_match_score');
+  ok(r.data.list[0].match_score === 73, '桌级 match_score 仍透出（§27 约束）');
+
   console.log(`\n✅ match 单测全部通过：${passed} 项断言`);
 }
 

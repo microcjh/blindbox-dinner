@@ -113,9 +113,9 @@
                 <text class="reg-card__city">{{item.city}}</text>
                 <text class="reg-card__district" wx:if="{{item.district}}">· {{item.district}}</text>
               </view>
-              <view class="table-card__score" wx:if="{{item.matchScore !== null}}">
-                <text class="table-card__score-num">{{item.matchScore}}</text>
-                <text class="table-card__score-label">同频分</text>
+              <view class="table-card__score" wx:if="{{item.scoreValue !== null}}">
+                <text class="table-card__score-num">{{item.scoreValue}}</text>
+                <text class="table-card__score-label">{{item.scoreLabel}}</text>
               </view>
             </view>
 
@@ -124,6 +124,14 @@
             <view class="reg-card__foot">
               <text class="reg-card__price">{{item.priceText}}</text>
               <text class="reg-card__seats">{{item.memberCount}} 人同桌</text>
+            </view>
+
+            <view class="table-card__breakdown" wx:if="{{item.breakdownList}}">
+              <view class="bk-row" wx:for="{{item.breakdownList}}" wx:key="label" wx:for-item="bk">
+                <text class="bk-label">{{bk.label}}</text>
+                <view class="bk-track"><view class="bk-fill" style="width:{{bk.value}}%"></view></view>
+                <text class="bk-value">{{bk.value}}</text>
+              </view>
             </view>
           </ui-card>
         </view>

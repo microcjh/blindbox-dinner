@@ -48,29 +48,48 @@ function jaccard(a = [], b = []) {
   return union === 0 ? 0 : inter / union;
 }
 
-function scorePair(qa, qb) {
+// 同频打分（带可解释维度，task-027）：返回 { total, breakdown:{budget,topics,personality,taboo} }（均 0–100）。
+// 无问卷任一方返回 null。breakdown 均为正向分：taboo = 无冲突度（100=无冲突，60=存在忌口冲突）。
+// 与 task-024 的 scorePair 总分口径完全一致（仅额外拆出维度供前端"同频分可解释性"展示）。
+function scorePairBreakdown(qa, qb) {
   if (!qa || !qb) return null;
 
   // 1) budget 接近度（差 0 → 1.0，差 ≥200 → 0）
   const budgetGap = Math.abs((qa.budget || 0) - (qb.budget || 0));
   const budgetScore = Math.max(0, 1 - budgetGap / 200);
 
-  // 2) taboo 冲突惩罚（任一方忌口命中另一方话题/口味 → 强降分）
+  // 2) taboo 冲突惩罚（任一方忌口命中另一方忌口 → 强降分）
   const tabooA = new Set((qa.taboo || []).map((x) => String(x).trim()));
   const tabooB = new Set((qb.taboo || []).map((x) => String(x).trim()));
   const conflict = [...tabooA].some((t) => tabooB.has(t)) || [...tabooB].some((t) => tabooA.has(t));
-  const tabooPenalty = conflict ? 0.4 : 0; // 冲突直接扣 40%
+  const tabooPenalty = conflict ? 0.4 : 0; // 冲突整体扣 40%
 
   // 3) topics 重合度（0–1）
   const topicScore = jaccard(qa.topics, qb.topics);
 
-  // 4) personality 是否同频（精确匹配 +1 档，否则按 diet_pref 同类兜底）
+  // 4) personality 是否同频（精确匹配 +1 档，否则按 0.5 兜底）
   const personalityScore = qa.personality === qb.personality ? 1 : 0.5;
 
   // 加权：budget 30% + topics 35% + personality 20% + (1 - tabooPenalty 折算) 15%
-  let raw = budgetScore * 0.3 + topicScore * 0.35 + personalityScore * 0.2 + (1 - tabooPenalty) * 0.15;
-  raw *= (1 - tabooPenalty); // 冲突再整体惩罚
-  return Math.round(Math.max(0, Math.min(1, raw)) * 100);
+  const raw = budgetScore * 0.3 + topicScore * 0.35 + personalityScore * 0.2 + (1 - tabooPenalty) * 0.15;
+  const total = Math.round(Math.max(0, Math.min(1, raw * (1 - tabooPenalty))) * 100);
+
+  return {
+    total,
+    breakdown: {
+      budget: Math.round(budgetScore * 100),
+      topics: Math.round(topicScore * 100),
+      personality: Math.round(personalityScore * 100),
+      taboo: Math.round((1 - tabooPenalty) * 100),
+    },
+  };
+}
+
+// 同频打分（task-024 口径）：返回 0–100 总分；无问卷任一方返回 null。
+// 委托 scorePairBreakdown，保证"桌级 match_score"与 task-024 完全一致。
+function scorePair(qa, qb) {
+  const b = scorePairBreakdown(qa, qb);
+  return b ? b.total : null;
 }
 
 // 取 bestN 个与 anchor 同频最高的候选（含 anchor 自身），不足回退先到先得
@@ -239,22 +258,49 @@ async function notifyTable(memberIds, eventSummary) {
   }
 }
 
-// 我的桌：列出当前用户参与的所有 match_groups + 关联场次摘要
+// 我的桌：列出当前用户参与的所有 match_groups + 关联场次摘要 + 个人同频分构成（task-027）
 async function handleMyMatches(event) {
   // 1) 身份
   const payload = verifyToken(event && event.token);
   if (!payload) return { code: 401, message: '登录态已失效，请重新登录' };
+  const uid = payload.uid;
 
   // 2) 查包含当前用户的桌（members 数组含 uid）
   const res = await query(MATCH_COLL, {
-    where: { members: payload.uid },
+    where: { members: uid },
     orderBy: ['matched_at', 'desc'],
     pageSize: 50,
     fields: MATCH_FIELDS,
   });
   if (res.code !== 0) return { code: 500, message: res.message };
 
-  const list = await Promise.all((res.data.list || []).map(withEventSummary));
+  const tables = res.data.list || [];
+  // 3) 批量预取「本人 + 所有同桌成员」的问卷公开维度（用于计算个人同频分构成）
+  const myQ = (await loadQuestionnaires([uid]))[uid] || null;
+  const allMemberIds = [...new Set(tables.flatMap((t) => t.members || []))];
+  const qMap = await loadQuestionnaires(allMemberIds);
+
+  // 4) 逐桌计算"本人 vs 同桌其他成员"的同频分构成（读时计算，不落库）
+  const list = await Promise.all(tables.map(async (m) => {
+    const view = await withEventSummary(m);
+    // 无本人问卷 → 无法解释，仅透出桌级 match_score（保持 §27 约定）
+    if (myQ) {
+      const others = (m.members || []).filter((id) => id !== uid);
+      const pairs = others.map((id) => scorePairBreakdown(myQ, qMap[id] || null)).filter(Boolean);
+      if (pairs.length) {
+        const avg = (sel) => Math.round(pairs.reduce((s, p) => s + sel(p), 0) / pairs.length);
+        view.my_match_score = avg((p) => p.total); // 个人同频总分（0–100）
+        view.match_breakdown = {
+          budget: avg((p) => p.breakdown.budget),
+          topics: avg((p) => p.breakdown.topics),
+          personality: avg((p) => p.breakdown.personality),
+          taboo: avg((p) => p.breakdown.taboo),
+        };
+      }
+    }
+    return view;
+  }));
+
   return {
     code: 0,
     message: 'ok',

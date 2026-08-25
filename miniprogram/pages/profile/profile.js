@@ -66,6 +66,19 @@ Page({
       const uid = authService.getUid ? authService.getUid() : '';
       const tables = list.map((m) => {
         const ev = m.event || {};
+        const bd = m.match_breakdown || null;
+        const hasBd = !!bd;
+        const myScore = typeof m.my_match_score === 'number' ? m.my_match_score : null;
+        const tableScore = typeof m.match_score === 'number' ? m.match_score : null;
+        // 优先展示"个人同频分"，无构成时退回桌级 match_score（task-027）
+        const scoreValue = hasBd && myScore !== null ? myScore : tableScore;
+        const scoreLabel = hasBd ? '我的同频分' : '同频分';
+        const breakdownList = bd ? [
+          { label: '预算接近度', value: bd.budget },
+          { label: '话题重合度', value: bd.topics },
+          { label: '性格契合度', value: bd.personality },
+          { label: '忌口无冲突', value: bd.taboo },
+        ] : null;
         return {
           id: m.id,
           eventId: ev.id || m.event_id,
@@ -74,7 +87,12 @@ Page({
           timeText: ev.time ? formatEventTime(ev.time) : '',
           priceText: typeof ev.price === 'number' ? formatPrice(ev.price) : '',
           memberCount: (m.members || []).length,
-          matchScore: typeof m.match_score === 'number' ? m.match_score : null,
+          matchScore: tableScore,
+          myMatchScore: myScore,
+          matchBreakdown: bd,
+          breakdownList,
+          scoreValue,
+          scoreLabel,
           isMine: !!uid && (m.members || []).includes(uid),
         };
       });
