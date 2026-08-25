@@ -165,6 +165,50 @@
   margin-top: 2rpx;
 }
 
+/* 同频分构成进度条（task-027） */
+.table-card__breakdown {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bk-row {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+}
+
+.bk-label {
+  width: 150rpx;
+  flex-shrink: 0;
+  color: var(--color-text-sub);
+}
+
+.bk-track {
+  flex: 1;
+  height: 12rpx;
+  border-radius: 6rpx;
+  background: var(--color-bg);
+  overflow: hidden;
+  margin: 0 var(--space-2);
+}
+
+.bk-fill {
+  height: 100%;
+  border-radius: 6rpx;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-warning));
+  transition: width 0.3s ease;
+}
+
+.bk-value {
+  width: 48rpx;
+  flex-shrink: 0;
+  text-align: right;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
 .tables__empty {
   display: flex;
   flex-direction: column;

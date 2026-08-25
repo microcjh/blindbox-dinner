@@ -257,3 +257,10 @@
 - **触发点**：`cloudfunctions/match` 落桌成功后（标记 matched 之后）调 `notifyTable` —— 批量反查 members 的 `users.openid`（按 `_id $in` 查）并逐个发「凑桌成功」通知。**通知是增强能力：失败静默 catch，绝不阻断凑桌主流程**（错误码语义见 §7）。
 - **前端 opt-in 时机**：`pages/event-detail` 在**报名/支付成功后**调 `matchService.requestMatchSubscribe()`（task-019 门面扩展，封装 `wx.requestSubscribeMessage`，模板 ID 用常量 `MATCH_SUBSCRIBE_TMPL_ID`）。这是微信订阅消息转化最高的时机（用户刚完成关键动作）；用户拒绝 → 返回 `{accepted:false}` 静默不阻断。注意：前端申请的 tmplId 须与后台申请的模板一致，否则 `requestSubscribeMessage` 报错（门面已 fail 兜底）。
 - **字段映射**：订阅消息 data 用 `thing1`（饭局名）/ `time2`（时间）/ `number3`（同桌人数），跳转 `pages/profile/profile`（我的桌）。
+
+## §29 同频分可解释性（task-027）
+- **让"同频"可被用户感知**：产品核心卖点是"系统凑同频陌生人"，但 `match_score` 仅是桌级两两均值（匿名、不可归因到本人）。task-027 让「我的桌」能展示"你与这桌人为何同频"——`myMatches` 为每个桌计算"本人 vs 同桌其他成员"的个人同频分构成。
+- **读时计算，不落库**：`match_breakdown`（四维：`budget` 预算接近度 / `topics` 话题重合度 / `personality` 性格契合度 / `taboo` 忌口无冲突度，均 0–100）+ `my_match_score`（个人同频总分 0–100）在 `handleMyMatches` 内由 `scorePairBreakdown` 现算（批量预取本人 + 同桌成员的问卷公开维度后取均值），**不新增存储字段**、不改动 `match_groups` schema；桌级 `match_score`（§27）仍照常透出作兜底展示。
+- **字段语义**：`breakdown.taboo` 为**正向无冲突度**（100=同桌无人忌口冲突，60=存在忌口互相命中），与打分端 `tabooPenalty=0.4` 口径一致；四维均为 0–100 便于前端进度条直渲。
+- **优先展示个人分**：前端 `profile.js` 的 `loadMyTables` 派生 `scoreValue`/`scoreLabel`——有 `match_breakdown` 时显示"我的同频分"+ 四维进度条，否则退回桌级"同频分"；本人无问卷（`myQ` 为空）时后端不返回 breakdown，前端仅展示 `match_score`（与 §27 行为一致）。
+- **复用打分内核**：`scorePairBreakdown(qa,qb)` 返回 `{total, breakdown}`，`scorePair` 改为委托它仅取 `total`——保证"桌级 match_score"与 task-024 数值口径**完全一致**，不破坏既有单测。
