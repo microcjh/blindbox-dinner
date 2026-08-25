@@ -302,4 +302,11 @@ Page({
       this.setData({ sosSending: false });
     }
   },
+
+  // 跳「饭局评价」页：查看本场全部评价 + 给同桌饭友打分
+  // members 取当前同桌其他成员 uid(逗号分隔) 透传给 review 页
+  goReview() {
+    const uids = (this.data.tableMembers || []).map((m) => m.uid).join(',');
+    wx.navigateTo({ url: `/pages/review/review?eventId=${this.data.id}&members=${uids}` });
+  },
 });

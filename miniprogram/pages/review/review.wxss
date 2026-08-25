@@ -1,1 +1,159 @@
-/* 邀请函 页面样式（由对应任务填充） */
+/* pages/review/review.wxss — 饭局评价 / 饭后沉淀 */
+.review {
+  min-height: 100vh;
+  padding: 24rpx 24rpx calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.review ui-card {
+  display: block;
+  margin-top: 20rpx;
+  border-radius: var(--radius-card);
+}
+
+/* 给同桌饭友打分 */
+.mb-tip {
+  font-size: 24rpx;
+  color: var(--color-text-sub);
+  margin-bottom: 12rpx;
+}
+.mb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 0;
+  border-top: 1rpx solid var(--color-border);
+}
+.mb-row:first-of-type {
+  border-top: none;
+}
+.mb-name {
+  font-size: 28rpx;
+  color: var(--color-text);
+  font-weight: 500;
+}
+.mb-act {
+  display: flex;
+}
+
+/* 大家的评价 */
+.rev-empty {
+  font-size: 26rpx;
+  color: var(--color-text-sub);
+  text-align: center;
+  padding: 24rpx 0;
+}
+.rev {
+  padding: 20rpx 0;
+  border-top: 1rpx solid var(--color-border);
+}
+.rev:first-of-type {
+  border-top: none;
+  padding-top: 4rpx;
+}
+.rev__head {
+  display: flex;
+  align-items: center;
+  font-size: 26rpx;
+  color: var(--color-text);
+}
+.rev__arrow {
+  color: var(--color-text-sub);
+  margin: 0 8rpx;
+}
+.rev__score {
+  margin-left: auto;
+  color: #FFB400;
+  font-weight: 600;
+}
+.rev__tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+.rev__tags ui-tag {
+  margin: 0 12rpx 12rpx 0;
+}
+.rev__comment {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+.rev__time {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--color-text-sub);
+}
+
+/* 评价弹层 */
+.mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  z-index: 100;
+}
+.sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 36rpx 32rpx calc(36rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.sheet__title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 24rpx;
+  text-align: center;
+}
+.sheet ui-button {
+  margin-top: 16rpx;
+}
+.sheet__textarea {
+  width: 100%;
+  height: 160rpx;
+  box-sizing: border-box;
+  padding: 20rpx;
+  font-size: 28rpx;
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-card);
+  margin: 28rpx 0;
+  background: #fafafa;
+}
+
+/* 评分星星 */
+.stars {
+  display: flex;
+  justify-content: center;
+}
+.star {
+  font-size: 64rpx;
+  color: #d8d8d8;
+  margin: 0 10rpx;
+  transition: color 0.15s;
+}
+.star--on {
+  color: #FFB400;
+}
+
+/* 预设标签 */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.tag {
+  font-size: 24rpx;
+  color: var(--color-text-sub);
+  border: 1rpx solid var(--color-border);
+  border-radius: 999rpx;
+  padding: 10rpx 22rpx;
+  margin: 10rpx;
+}
+.tag--on {
+  color: #FF6B4A;
+  border-color: #FF6B4A;
+  background: rgba(255, 107, 74, 0.08);
+}

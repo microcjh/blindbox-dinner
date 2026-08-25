@@ -270,3 +270,10 @@
 - **权限前端仅做"无权限态"展示，不信赖前端判定**：真实权限由 `cloudfunctions/admin` 的 `requireAdmin`（verifyToken + env `ADMIN_UIDS` 白名单）强制，非管理员任何 action 返回 **403**。前端 `callFunction` 已对 403 自动 toast 并 reject；审核台页面**捕获 403 后将整页切换为「无权限」占位（ui-empty 🔒）**，不展示任何待办数据。普通用户可见入口但打开即见无权限态——这是刻意设计（云端才是真闸门）。
 - **写操作走 loading:true 门面**：`handleReport(decision=resolved|banned)` 与 `handleSos` 复用 `services/admin` 的 `loading:true` 门面（写操作语义，见 §25）；列表 `listReports`/`listSos` 为浏览类 `loading:false`。处置前用 `wx.showModal` 二次确认（封禁文案更重），成功后 `wx.showToast` 并重新拉取当前 Tab 列表（已从列表移除已处理项）。
 - **数据透传不修改**：report 卡展示 `reason`(ui-tag type=error)/`reporter→target`/`detail`/`created_at`；sos 卡展示 `type`(ui-tag type=warning)/`user_id`/`event_id`/`desc`/`location`/`created_at`。时间统一 `fmtTime` 截 `MM-DD HH:mm`；字段名 `_id→id`、`user_id→userId`、`event_id→eventId` 在门面/页面层映射，与全仓 `toXxxView` 口径一致。
+
+## §31 饭局评价页 / 饭后沉淀（task-029）
+- **接通占位页**：`pages/review` 原为空壳"邀请函"，task-029 接通为真实"饭局评价/沉淀"页——`listReviews(eventId)`（浏览类 `loading:false`）展示本场全部评价（匿名化 `饭友 xxxx`），`submitReview`（写操作走默认 loading）对同桌饭友提交评分 1–5 + 预设标签 + 可选评论。
+- **入口从 event-detail「饭后沉淀」卡片**：仅本场已凑桌成员可见该卡片，卡片内加"查看全部评价 ›"入口（`goReview`）→ `wx.navigateTo` 到 `/pages/review/review?eventId=..&members=<逗号uid>`；`members` 取 `syncMyTable` 算出的同桌其他成员 uid，透传给评价页作"待评价对象"。
+- **reviewedUids 本地回显、云端 409 为权威**：评价页 `onLoad` 拉列表后用 `from_uid === myUid` 过滤出"我已评过的 to_uid"标记"已评"并禁用按钮（本地即时反馈）；提交成功后乐观加入 `reviewedUids` 并重拉列表。真实"不可重复"由 `cloudfunctions/review` 唯一约束（from,to,event）强制（409），前端判定仅作 UX 优化。
+- **预设标签上限 10 与云函数一致**：`PRESET_TAGS` 8 个正向标签，`onToggleTag` 选满 10 即停止（云函数 `tags.slice(0,10)`）；WXML 不支持 `.indexOf`，选中态用 `{label,on}` 对象数组驱动（`item.on` 直渲），提交时 `filter(on).map(label)` 还原。评论 `maxlength=200` 与云函数 `COMMENT_MAX=200` 对齐。
+- **无 members 也不崩**：评价页 `onLoad` 缺 `eventId` 整页切空态（ui-empty"页面参数缺失"）；有 `eventId` 但无 `members`（如深链进入）仅隐藏"给同桌打分"卡、仍可浏览本场评价。

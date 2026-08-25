@@ -53,6 +53,10 @@
             <ui-button size="small" type="ghost" data-uid="{{item.uid}}" data-name="{{item.name}}" bind:tap="onOpenReport">举报</ui-button>
           </view>
         </view>
+        <view class="table__more" bind:tap="goReview">
+          <text>查看全部评价</text>
+          <text class="table__more-arrow">›</text>
+        </view>
       </view>
     </ui-card>
   </block>
