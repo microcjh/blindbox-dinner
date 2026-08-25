@@ -1,3 +1,11 @@
 {
-  "navigationBarTitleText": "评价"
+  "navigationBarTitleText": "一键求助",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "ui-card": "/components/ui-card/ui-card",
+    "ui-button": "/components/ui-button/ui-button",
+    "ui-tag": "/components/ui-tag/ui-tag",
+    "ui-empty": "/components/empty/empty",
+    "ui-skeleton": "/components/skeleton/skeleton"
+  }
 }

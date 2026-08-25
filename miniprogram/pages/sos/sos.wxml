@@ -1,3 +1,80 @@
-<view class="placeholder">
-  <text>评价 · 建设中</text>
+<view class="sos">
+  <!-- 未登录态 -->
+  <ui-empty
+    wx:if="{{!loggedIn}}"
+    icon="🔒"
+    text="请先登录后发起求助"
+    desc="登录后可在场次详情随时发起一键求助"
+    show-action="{{true}}"
+  >
+    <ui-button slot="action" size="small" bind:tap="goLogin">去登录</ui-button>
+  </ui-empty>
+
+  <block wx:else>
+    <!-- 未关联场次提示 -->
+    <view wx:if="{{eventId === ''}}" class="sos__banner">未关联到具体场次，请通过场次详情页的 SOS 浮标发起求助。</view>
+
+    <!-- 求助表单 -->
+    <ui-card title="一键求助">
+      <view wx:if="{{event}}" class="sos__event">
+        <text class="sos__event-title">{{event.title || '约饭场次'}}</text>
+        <text class="sos__event-meta">{{event.city}}{{event.district}} · {{event.timeText}}</text>
+      </view>
+
+      <view class="sos__types">
+        <view
+          wx:for="{{typeList}}"
+          wx:key="value"
+          class="sos__type {{item.on ? 'sos__type--on' : ''}}"
+          data-value="{{item.value}}"
+          bind:tap="onTypeTap"
+        >
+          <text class="sos__type-label">{{item.label}}</text>
+          <text class="sos__type-desc">{{item.desc}}</text>
+        </view>
+      </view>
+
+      <textarea
+        class="sos__desc"
+        placeholder="补充说明（选填，便于处置方快速了解情况）"
+        maxlength="200"
+        value="{{desc}}"
+        bindinput="onDescInput"
+      />
+
+      <view class="sos__loc" bind:tap="onToggleLocation">
+        <text class="sos__loc-icon">{{withLocation ? '📍' : '➕'}}</text>
+        <text class="sos__loc-text">{{withLocation ? '已附带位置' : '附带我的位置（选填）'}}</text>
+      </view>
+
+      <ui-button
+        type="danger"
+        block
+        loading="{{submitting}}"
+        disabled="{{eventId === ''}}"
+        bind:tap="onSubmit"
+      >确认发起求助</ui-button>
+    </ui-card>
+
+    <!-- 我的求助记录 -->
+    <ui-card title="我的求助记录">
+      <skeleton wx:if="{{myLoading}}" loading="{{true}}" rows="{{3}}" />
+      <ui-empty
+        wx:elif="{{myList.length === 0}}"
+        icon="🆘"
+        text="暂无求助记录"
+        desc="发起求助后会显示在这里"
+      />
+      <view wx:else class="sos__list">
+        <view wx:for="{{myList}}" wx:key="id" class="sos__item">
+          <view class="sos__item-head">
+            <text class="sos__item-type">{{item.typeLabel}}</text>
+            <ui-tag type="{{item.statusType}}" small>{{item.statusLabel}}</ui-tag>
+          </view>
+          <text wx:if="{{item.desc}}" class="sos__item-desc">{{item.desc}}</text>
+          <text class="sos__item-time">{{item.createdText}}</text>
+        </view>
+      </view>
+    </ui-card>
+  </block>
 </view>

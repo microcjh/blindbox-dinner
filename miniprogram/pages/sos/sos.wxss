@@ -1,1 +1,134 @@
-/* 评价 页面样式（由对应任务填充） */
+.sos {
+  min-height: 100vh;
+  padding: var(--space-4) var(--space-4) 48rpx;
+  box-sizing: border-box;
+}
+
+/* 未关联场次横幅 */
+.sos__banner {
+  background: #FFF4E5;
+  color: #B26A00;
+  font-size: 24rpx;
+  line-height: 1.5;
+  padding: 20rpx 24rpx;
+  border-radius: var(--radius-card);
+  margin-bottom: var(--space-4);
+}
+
+/* 关联场次摘要 */
+.sos__event {
+  display: flex;
+  flex-direction: column;
+  padding: 16rpx 20rpx;
+  background: var(--color-bg);
+  border-radius: var(--radius-card);
+  margin-bottom: var(--space-4);
+}
+.sos__event-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.sos__event-meta {
+  font-size: 22rpx;
+  color: var(--color-text-sub);
+  margin-top: 4rpx;
+}
+
+/* 类型选择网格 */
+.sos__types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: var(--space-4);
+}
+.sos__type {
+  width: calc(50% - 8rpx);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 20rpx;
+  border: 2rpx solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: #fff;
+  transition: all 0.15s ease;
+}
+.sos__type--on {
+  border-color: var(--color-primary, #FF6B4A);
+  background: #FFF1EC;
+}
+.sos__type-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.sos__type-desc {
+  font-size: 22rpx;
+  color: var(--color-text-sub);
+  margin-top: 6rpx;
+  line-height: 1.4;
+}
+
+/* 描述 */
+.sos__desc {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 140rpx;
+  padding: 20rpx;
+  font-size: 26rpx;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border-radius: var(--radius-card);
+  margin-bottom: var(--space-4);
+}
+
+/* 位置开关 */
+.sos__loc {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  margin-bottom: var(--space-4);
+}
+.sos__loc-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+.sos__loc-text {
+  font-size: 26rpx;
+  color: var(--color-text-sub);
+}
+
+/* 我的求助列表 */
+.sos__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+.sos__item {
+  padding: 20rpx;
+  background: var(--color-bg);
+  border-radius: var(--radius-card);
+}
+.sos__item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sos__item-type {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.sos__item-desc {
+  display: block;
+  font-size: 24rpx;
+  color: var(--color-text-sub);
+  margin-top: 8rpx;
+  line-height: 1.5;
+}
+.sos__item-time {
+  display: block;
+  font-size: 22rpx;
+  color: var(--color-text-sub);
+  margin-top: 8rpx;
+}
