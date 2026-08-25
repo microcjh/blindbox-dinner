@@ -14,15 +14,14 @@
 //
 // 错误码：401 未登录 / 400 参数 / 404 不存在（场次） / 409 冲突（人数不足/已凑满） / 500 异常
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, getById, insert, update } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
-const { sendMatchSuccess } = require(path.join(__dirname, '..', 'common', 'subscribe'));
+const { query, getById, insert, update } = require('common/db');
+const { verifyToken } = require('common/session');
+const { sendMatchSuccess } = require('common/subscribe');
 
 const REG_COLL = 'registrations';
 const MATCH_COLL = 'match_groups';

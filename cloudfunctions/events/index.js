@@ -14,14 +14,13 @@
 //
 // 错误码：401 未登录 / 400 参数 / 402 未实名 / 404 不存在 / 500 异常
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, getById, insert } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { query, getById, insert } = require('common/db');
+const { verifyToken } = require('common/session');
 
 const COLLECTION = 'events';
 const MAX_CAPACITY = 6; // 每桌 6 人上限（见 database-schema）

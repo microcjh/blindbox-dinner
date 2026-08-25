@@ -12,14 +12,13 @@
 //
 // 错误码：401 未登录 / 403 无权限 / 400 参数 / 404 不存在 / 500 异常
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, getById, update } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { query, getById, update } = require('common/db');
+const { verifyToken } = require('common/session');
 
 const BLACKLIST_COLL = 'blacklist';
 const SOS_COLL = 'sos';

@@ -17,15 +17,14 @@
 // 错误码：401 未登录 / 400 参数 / 404 不存在 / 409 冲突（状态不对/无支付记录/已退款）
 //         / 503 第三方不可用（退款调用失败）
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, getById, insert, update } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
-const { isPayConfigured } = require(path.join(__dirname, '..', 'common', 'pay'));
+const { query, getById, insert, update } = require('common/db');
+const { verifyToken } = require('common/session');
+const { isPayConfigured } = require('common/pay');
 
 const REG_COLL = 'registrations';
 const PAY_COLL = 'payments';

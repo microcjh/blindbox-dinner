@@ -15,16 +15,15 @@
 //
 // 错误码：401 未登录 / 400 参数 / 403 核身未通过 / 409 已实名 / 404 用户不存在 / 500 异常
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { getById, update } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
-const { hashIdCard, isValidIdCard } = require(path.join(__dirname, '..', 'common', 'crypto'));
-const { faceVerify } = require(path.join(__dirname, '..', 'common', 'faceverify'));
+const { getById, update } = require('common/db');
+const { verifyToken } = require('common/session');
+const { hashIdCard, isValidIdCard } = require('common/crypto');
+const { faceVerify } = require('common/faceverify');
 
 const COLLECTION = 'users';
 

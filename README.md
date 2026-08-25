@@ -88,6 +88,19 @@ cd blindbox-dinner
 #    wx.cloud.callFunction({ name: 'quickstart', data: { action: 'echo', payload: 'hi' } })
 ```
 
+## 部署
+
+> ⚠️ **关键前置**：共享模块 `cloudfunctions/common/` 必须作为 CloudBase「**公共模块**」上传一次，否则所有云函数云端 `require` 必崩（标准「上传并部署单个云函数」不会打包目录外的 common）。
+
+1. **换真实 AppID**：`project.config.json` 的 `appid` 从 `touristappid` 改为你在 `mp.weixin.qq.com` 注册的小程序 AppID；`miniprogram/app.js` 的 `globalData.cloudEnv` 改为你账号下的云环境 ID（`cloud1-...` 为体验版环境，不可跨账号使用）。
+2. **上传公共模块（最关键）**：云函数面板 → 「公共模块」→ 上传本地 `cloudfunctions/common` 目录（模块名取 `common`）。所有业务云函数用 `require('common/db')` 等裸模块写法，平台部署时自动注入 `node_modules/common`。**不要**对 `common` 单独「上传并部署」，也不要在业务云函数里用相对路径引用它。
+3. **上传业务云函数**：对 `auth / register / verify / events / payment / refund / review / sos / admin / blacklist / match / questionnaire / seed-restaurants / init-db` 逐个右键 → 「上传并部署：云端安装依赖」。
+4. **初始化数据库（首次）**：右键 `init-db` → 云端测试/触发 `main()` 建 12 个集合 + 索引（幂等，可重跑）；再右键 `seed-restaurants` → 触发灌入种子餐厅。
+5. **选配**：人脸核身（`WX_FACE_VERIFY_RULE_ID`）、微信支付（商户号 / API 密钥）、订阅消息模板（配 `SUBSCRIBE_TMPL_MATCH`）——未配置时均走 dev 占位，不阻断主流程。
+6. **验证联通**：DevTools 控制台 `wx.cloud.callFunction({ name: 'events', data: { action: 'list' } })` 返回 `{ code:0, data:{ list:[...] } }` 即成功。
+
+本地单测：`bash scripts/test-all.sh`（会自动建 `cloudfunctions/node_modules/common` 软链，使 `require('common/X')` 本地可解析）。游客模式（`touristappid`）只能 DevTools 模拟器看 UI，云功能不可用。
+
 ## 研发规范入口
 
 新同学请先读 [CONTRIBUTING.md](./CONTRIBUTING.md)，再按需在 `docs/` 查阅具体规范。

@@ -11,7 +11,7 @@ Module._resolveFilename = function (request, ...args) {
   return origResolve.call(this, request, ...args);
 };
 
-const { signToken, verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { signToken, verifyToken } = require('common/session');
 const main = require('./index').main;
 
 function tokenOf(uid = 'u1') {

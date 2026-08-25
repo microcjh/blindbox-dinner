@@ -108,9 +108,11 @@
 - 复合索引字段顺序即查询顺序：`events.idx_city_district_time` 支持「城市→区→时间」筛选，查询条件必须**从左前缀**命中才能走索引。
 - 所有集合 / 索引变更必须经 `init-db` 云函数落地，**禁止手动在控制台零散建索引**（易遗漏、不可追溯）；变更同步更新 `docs/database-schema.md`。
 
-## 12. 云函数 db 公共模块约定（见 cloudfunctions/common/db.js）
+## 12. 云函数公共模块约定（见 cloudfunctions/common/）
 
-- 所有业务云函数的数据库访问**统一 require `cloudfunctions/common/db.js`**，禁止在各云函数里重复拼 `.where().orderBy().skip().limit().field()`，避免散落与不一致。
+- `cloudfunctions/common/` 是**共享模块**（`db.js / session.js / crypto.js / faceverify.js / subscribe.js / pay.js`），**必须作为 CloudBase「公共模块」上传一次**（DevTools 云函数面板 → 公共模块 → 上传 `cloudfunctions/common`，模块名取 `common`）。平台部署时把该模块注入各云函数的 `node_modules/common`，故业务代码一律 `require('common/db')` / `require('common/session')` 等**裸模块写法**；禁止 `require(path.join(__dirname,'..','common',...))` 或相对路径（标准「上传并部署单个云函数」不会打包目录外的 common，相对写法在云端必崩）。
+- 本地解析：`cloudfunctions/node_modules/common` 软链指向 `../common`（`scripts/test-all.sh` 已自动创建），使本地 `require('common/X')` 与云端公共模块一致。
+- 所有业务云函数的数据库访问**统一 `require('common/db')`**，禁止在各云函数里重复拼 `.where().orderBy().skip().limit().field()`，避免散落与不一致。
 - 查询一律用 `db.query(collectionName, { where, page, pageSize, orderBy, fields })`，返回 `{ code, message, data: { list, total } }`；`total` 由独立 `count()` 链算出，不受 `skip/limit` 影响。
 - **分页**：`page` 从 1 起，`pageSize` 默认 20、上限 100（超界自动截断），内部换算 `skip=(page-1)*size`；前端列表场景必须传 `page` 而非一次性拉全量。
 - **where 透传**：普通对象（如 `{ status: 'open' }`）与 `db.command`（如 `_.in([...])` / `_.gt(...)`）都直接透传，不做二次封装；复合条件在调用方拼好再传入。

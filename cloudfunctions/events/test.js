@@ -21,7 +21,7 @@ Module._resolveFilename = function (req, parent, ...rest) {
 };
 
 const cloud = require('wx-server-sdk');
-const { signToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { signToken } = require('common/session');
 const main = require('./index.js').main;
 
 const FUTURE = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString();

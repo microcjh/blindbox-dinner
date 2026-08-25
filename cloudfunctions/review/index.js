@@ -15,14 +15,13 @@
 //
 // 错误码：401 未登录 / 400 参数 / 403 非本桌成员 / 404 不存在（场次/同桌） / 409 冲突（已评价） / 500 异常
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, getById, insert } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { query, getById, insert } = require('common/db');
+const { verifyToken } = require('common/session');
 
 const REVIEW_COLL = 'reviews';
 const MATCH_COLL = 'match_groups';

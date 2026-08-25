@@ -11,7 +11,7 @@ Module._resolveFilename = function (request, ...args) {
   return origResolve.call(this, request, ...args);
 };
 
-const { signToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { signToken } = require('common/session');
 const main = require('./index').main;
 
 const mock = require('wx-server-sdk').__mock;

@@ -12,14 +12,13 @@
 //
 // 错误码：401 未登录 / 400 参数 / 500 异常
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
-const { query, insert } = require(path.join(__dirname, '..', 'common', 'db'));
-const { verifyToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { query, insert } = require('common/db');
+const { verifyToken } = require('common/session');
 
 const BLACKLIST_COLL = 'blacklist';
 const REASON_MAX = 50;

@@ -13,7 +13,7 @@ Module._resolveFilename = function (request, ...args) {
 };
 const mock = require('wx-server-sdk');
 const main = require('./index').main;
-const { signToken } = require(path.join(__dirname, '..', 'common', 'session'));
+const { signToken } = require('common/session');
 
 // 生成合法令牌（uid 默认 u1）
 function tokenOf(uid = 'u1') {

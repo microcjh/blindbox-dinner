@@ -25,7 +25,7 @@ Module._resolveFilename = function (req, parent, ...rest) {
 };
 
 const cloud = require('wx-server-sdk');
-const { signToken, verifyToken, DEFAULT_SECRET } = require(path.join(__dirname, '..', 'common', 'session'));
+const { signToken, verifyToken, DEFAULT_SECRET } = require('common/session');
 const main = require('./index.js').main;
 
 // base64url 工具（与 session.js 同实现，用于构造过期令牌用例）

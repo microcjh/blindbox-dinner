@@ -9,14 +9,13 @@
 // 调用：wx.cloud.callFunction({ name: 'seed-restaurants' }) 或云端日志手动触发
 // 依赖：宿主云函数已 cloud.init；common/db 不调用 cloud.init，由本文件负责
 const cloud = require('wx-server-sdk');
-const path = require('path');
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV,
 });
 
 const { RESTAURANTS, validate } = require('./data');
-const { query, insert } = require(path.join(__dirname, '..', 'common', 'db'));
+const { query, insert } = require('common/db');
 
 const COLLECTION = 'restaurants';
 
